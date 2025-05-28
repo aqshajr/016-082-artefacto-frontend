@@ -105,10 +105,7 @@ const BookmarkPage = () => {
                       {artifact.description}
                     </p>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray">
-                        {artifact.period || 'Periode tidak diketahui'}
-                      </div>
+                    <div className="flex items-center justify-end">
                       <button
                         onClick={() => handleViewArtifact(artifact.artifactID)}
                         className="flex items-center space-x-1 text-primary text-sm font-medium hover:text-primary-yellow transition-colors"

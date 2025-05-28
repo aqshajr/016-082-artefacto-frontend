@@ -40,12 +40,17 @@ const EditTemplePage = () => {
           funfactDescription: temple.funfactDescription || '',
           locationUrl: temple.locationUrl || '',
         });
-        setCurrentImageUrl(temple.imageUrl || '');
+        
+        // Add cache busting parameter to force image refresh
+        if (temple.imageUrl) {
+          const cacheBuster = `?v=${Date.now()}`;
+          setCurrentImageUrl(temple.imageUrl + cacheBuster);
+        }
       } else {
         setError('Data candi tidak ditemukan');
       }
     } catch (err) {
-      console.error('Error fetching temple:', err);
+      console.error('Error fetching temple data:', err);
       setError('Gagal memuat data candi. Silakan coba lagi.');
     } finally {
       setIsLoading(false);
@@ -123,7 +128,8 @@ const EditTemplePage = () => {
       
       if (response) {
         alert('Candi berhasil diperbarui!');
-        navigate('/admin/temples');
+        // Refresh the page to show updated image
+        window.location.reload();
       }
     } catch (err) {
       console.error('Error updating temple:', err);

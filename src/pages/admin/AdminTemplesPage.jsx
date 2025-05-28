@@ -145,13 +145,24 @@ const AdminTemplesPage = () => {
                       e.target.src = 'https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=400&h=300&fit=crop&crop=center';
                     }}
                   />
-                  <div className="absolute top-2 right-2 flex space-x-1">
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="font-semibold text-secondary text-lg mb-2">
+                    {temple.title}
+                  </h3>
+                  <p className="text-sm text-gray line-clamp-2 mb-3">
+                    {temple.description}
+                  </p>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-end space-x-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditTemple(temple.templeID);
                       }}
-                      className="p-2 bg-white/90 rounded-full text-primary hover:text-primary-yellow transition-colors"
+                      className="p-2 bg-primary/10 rounded-full text-primary hover:bg-primary hover:text-white transition-colors"
                       title="Edit Candi"
                     >
                       <Edit size={16} />
@@ -162,7 +173,7 @@ const AdminTemplesPage = () => {
                         handleDeleteTemple(temple.templeID, temple.title);
                       }}
                       disabled={deleteLoading === temple.templeID}
-                      className="p-2 bg-white/90 rounded-full text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                      className="p-2 bg-red-50 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
                       title="Hapus Candi"
                     >
                       {deleteLoading === temple.templeID ? (
@@ -172,15 +183,6 @@ const AdminTemplesPage = () => {
                       )}
                     </button>
                   </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-secondary text-lg mb-2">
-                    {temple.title}
-                  </h3>
-                  <p className="text-sm text-gray line-clamp-2">
-                    {temple.description}
-                  </p>
                 </div>
               </div>
             ))}

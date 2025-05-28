@@ -24,7 +24,11 @@ import AdminTemplesPage from './pages/admin/AdminTemplesPage.jsx';
 import CreateTemplePage from './pages/admin/CreateTemplePage.jsx';
 import EditTemplePage from './pages/admin/EditTemplePage.jsx';
 import AdminArtifactsPage from './pages/admin/AdminArtifactsPage.jsx';
+import CreateArtifactPage from './pages/admin/CreateArtifactPage.jsx';
+import EditArtifactPage from './pages/admin/EditArtifactPage.jsx';
 import AdminTicketsPage from './pages/admin/AdminTicketsPage.jsx';
+import CreateTicketPage from './pages/admin/CreateTicketPage.jsx';
+import EditTicketPage from './pages/admin/EditTicketPage.jsx';
 import AdminTransactionsPage from './pages/admin/AdminTransactionsPage.jsx';
 
 // Placeholder components untuk halaman yang belum dibuat
@@ -212,7 +216,7 @@ function AppContent() {
           path="/admin/artifacts/create" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Tambah Artefak (Admin)" />
+              <CreateArtifactPage />
             </ProtectedRoute>
           } 
         />
@@ -221,7 +225,7 @@ function AppContent() {
           path="/admin/artifacts/:id/edit" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Edit Artefak (Admin)" />
+              <EditArtifactPage />
             </ProtectedRoute>
           } 
         />
@@ -239,7 +243,7 @@ function AppContent() {
           path="/admin/tickets/create" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Tambah Tiket (Admin)" />
+              <CreateTicketPage />
             </ProtectedRoute>
           } 
         />
@@ -248,7 +252,7 @@ function AppContent() {
           path="/admin/tickets/:id/edit" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Edit Tiket (Admin)" />
+              <EditTicketPage />
             </ProtectedRoute>
           } 
         />

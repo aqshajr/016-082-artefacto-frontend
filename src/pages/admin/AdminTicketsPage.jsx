@@ -79,10 +79,6 @@ const AdminTicketsPage = () => {
     navigate(`/admin/tickets/${ticketId}/edit`);
   };
 
-  const handleViewTicket = (ticketId) => {
-    navigate(`/tickets/${ticketId}`);
-  };
-
   const getTempleName = (templeId) => {
     const temple = temples.find(t => t.templeID === templeId);
     return temple ? temple.title : 'Unknown Temple';
@@ -99,16 +95,11 @@ const AdminTicketsPage = () => {
   const filteredTickets = tickets.filter(ticket => {
     const templeMatch = !selectedTemple || ticket.templeID === parseInt(selectedTemple);
     const searchMatch = !searchQuery || 
-      (ticket.title && ticket.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
       ticket.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       getTempleName(ticket.templeID).toLowerCase().includes(searchQuery.toLowerCase());
     
     return templeMatch && searchMatch;
   });
-
-  // Calculate statistics
-  const totalRevenue = tickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0);
-  const averagePrice = tickets.length > 0 ? totalRevenue / tickets.length : 0;
 
   if (isLoading) {
     return <LoadingSpinner text="Memuat data tiket..." />;
@@ -132,19 +123,9 @@ const AdminTicketsPage = () => {
           
           {/* Stats and Controls */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary/10 rounded-xl px-4 py-2">
-                <div className="text-lg font-bold text-primary">{tickets.length}</div>
-                <div className="text-xs text-gray">Total Jenis Tiket</div>
-              </div>
-              <div className="bg-green-50 rounded-xl px-4 py-2">
-                <div className="text-lg font-bold text-green-600">{formatPrice(totalRevenue)}</div>
-                <div className="text-xs text-gray">Total Harga</div>
-              </div>
-              <div className="bg-blue-50 rounded-xl px-4 py-2">
-                <div className="text-lg font-bold text-blue-600">{formatPrice(averagePrice)}</div>
-                <div className="text-xs text-gray">Rata-rata Harga</div>
-              </div>
+            <div className="bg-primary/10 rounded-xl px-4 py-2">
+              <div className="text-lg font-bold text-primary">{tickets.length}</div>
+              <div className="text-xs text-gray">Total Jenis Tiket</div>
             </div>
             
             <div className="flex items-center space-x-3">
@@ -197,36 +178,43 @@ const AdminTicketsPage = () => {
             {filteredTickets.map((ticket) => (
               <div 
                 key={ticket.ticketID} 
-                className="bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleViewTicket(ticket.ticketID)}
+                className="bg-white rounded-xl overflow-hidden shadow-sm"
               >
                 <div className="relative h-48">
                   <img 
                     src={ticket.imageUrl || 'https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=400&h=300&fit=crop&crop=center'}
-                    alt={ticket.title || ticket.description}
+                    alt={ticket.description}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.src = 'https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=400&h=300&fit=crop&crop=center';
                     }}
                   />
-                  <div className="absolute top-2 right-2 flex space-x-1">
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="font-semibold text-secondary text-lg mb-1">
+                    Tiket {getTempleName(ticket.templeID)}
+                  </h3>
+                  <div className="text-xl font-bold text-green-600 mb-2">
+                    {formatPrice(ticket.price)}
+                  </div>
+                  <p className="text-sm text-gray line-clamp-2 mb-4">
+                    {ticket.description}
+                  </p>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-end space-x-2">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditTicket(ticket.ticketID);
-                      }}
-                      className="p-2 bg-white/90 rounded-full text-primary hover:text-primary-yellow transition-colors"
+                      onClick={() => handleEditTicket(ticket.ticketID)}
+                      className="p-2 text-primary hover:text-primary-yellow hover:bg-primary/10 rounded-lg transition-colors"
                       title="Edit Tiket"
                     >
                       <Edit size={16} />
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTicket(ticket.ticketID, ticket.description);
-                      }}
+                      onClick={() => handleDeleteTicket(ticket.ticketID, ticket.description)}
                       disabled={deleteLoading === ticket.ticketID}
-                      className="p-2 bg-white/90 rounded-full text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                      className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                       title="Hapus Tiket"
                     >
                       {deleteLoading === ticket.ticketID ? (
@@ -236,21 +224,6 @@ const AdminTicketsPage = () => {
                       )}
                     </button>
                   </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-secondary text-lg mb-1">
-                    {ticket.title || ticket.description}
-                  </h3>
-                  <div className="text-sm text-primary mb-2">
-                    {getTempleName(ticket.templeID)}
-                  </div>
-                  <div className="text-xl font-bold text-green-600 mb-2">
-                    {formatPrice(ticket.price)}
-                  </div>
-                  <p className="text-sm text-gray line-clamp-2">
-                    {ticket.description}
-                  </p>
                 </div>
               </div>
             ))}

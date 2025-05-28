@@ -188,13 +188,30 @@ const AdminArtifactsPage = () => {
                       e.target.src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center';
                     }}
                   />
-                  <div className="absolute top-2 right-2 flex space-x-1">
+                </div>
+                
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      {getTempleName(artifact.templeID)}
+                    </span>
+                  </div>
+                  
+                  <h3 className="font-semibold text-secondary text-lg mb-2">
+                    {artifact.title}
+                  </h3>
+                  <p className="text-sm text-gray line-clamp-2 mb-3">
+                    {artifact.description}
+                  </p>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-end space-x-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditArtifact(artifact.artifactID);
                       }}
-                      className="p-2 bg-white/90 rounded-full text-primary hover:text-primary-yellow transition-colors"
+                      className="p-2 bg-primary/10 rounded-full text-primary hover:bg-primary hover:text-white transition-colors"
                       title="Edit Artefak"
                     >
                       <Edit size={16} />
@@ -205,7 +222,7 @@ const AdminArtifactsPage = () => {
                         handleDeleteArtifact(artifact.artifactID, artifact.title);
                       }}
                       disabled={deleteLoading === artifact.artifactID}
-                      className="p-2 bg-white/90 rounded-full text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                      className="p-2 bg-red-50 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
                       title="Hapus Artefak"
                     >
                       {deleteLoading === artifact.artifactID ? (
@@ -215,18 +232,6 @@ const AdminArtifactsPage = () => {
                       )}
                     </button>
                   </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-secondary text-lg mb-1">
-                    {artifact.title}
-                  </h3>
-                  <div className="text-sm text-primary mb-2">
-                    {getTempleName(artifact.templeID)}
-                  </div>
-                  <p className="text-sm text-gray line-clamp-2">
-                    {artifact.description}
-                  </p>
                 </div>
               </div>
             ))}
