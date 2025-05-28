@@ -1,180 +1,354 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, Loader } from 'lucide-react';
+import { Camera, Upload, X, Zap, Eye, Bookmark } from 'lucide-react';
 import { mlAPI } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 
 const ScanPage = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
   const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
-  const handleImageSelect = (event) => {
-    const file = event.target.files[0];
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
     if (file) {
       setSelectedImage(file);
-      setResult(null);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      
       setError('');
+      setScanResult(null);
+    }
+  };
+
+  const startCamera = async () => {
+    try {
+      setShowCamera(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment' // Use back camera if available
+        } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+      }
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      setError('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin kamera.');
+      setShowCamera(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        setSelectedImage(blob);
+        setPreviewImage(canvas.toDataURL());
+        stopCamera();
+      }, 'image/jpeg', 0.8);
     }
   };
 
   const handleScan = async () => {
-    if (!selectedImage) return;
-
-    setIsLoading(true);
-    setError('');
+    if (!selectedImage) {
+      setError('Pilih gambar terlebih dahulu');
+      return;
+    }
 
     try {
-      const response = await mlAPI.predictArtifact(selectedImage);
-      setResult(response);
+      setIsScanning(true);
+      setError('');
+      setScanResult(null);
+
+      const formData = new FormData();
+      formData.append('image', selectedImage);
+
+      console.log('Scanning artifact...');
+      const response = await mlAPI.predictArtifact(formData);
+      console.log('Scan response:', response);
+
+      if (response && response.data) {
+        setScanResult(response.data);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err) {
       console.error('Scan error:', err);
-      setError('Gagal memindai artefak. Silakan coba lagi.');
+      
+      // Handle different types of errors
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        setError('Tidak dapat terhubung ke server AI. Pastikan koneksi internet Anda stabil dan coba lagi nanti.');
+      } else if (err.response?.status === 400) {
+        setError('Format gambar tidak valid. Gunakan gambar JPG atau PNG.');
+      } else if (err.response?.status === 500) {
+        setError('Server sedang mengalami masalah. Silakan coba lagi nanti.');
+      } else {
+        setError('Gagal memindai artefak. Silakan coba lagi.');
+      }
     } finally {
-      setIsLoading(false);
+      setIsScanning(false);
     }
   };
 
   const resetScan = () => {
     setSelectedImage(null);
-    setResult(null);
+    setPreviewImage(null);
+    setScanResult(null);
     setError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  if (isLoading) {
-    return <LoadingSpinner text="Memindai artefak..." />;
-  }
+  const handleBookmark = (artifactId) => {
+    const isBookmarked = localStorage.getItem(`bookmark_${artifactId}`) === 'true';
+    
+    if (isBookmarked) {
+      localStorage.removeItem(`bookmark_${artifactId}`);
+    } else {
+      localStorage.setItem(`bookmark_${artifactId}`, 'true');
+    }
+    
+    // Update scan result to reflect bookmark status
+    setScanResult(prev => ({
+      ...prev,
+      isBookmarked: !isBookmarked
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      <div className="container py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-secondary mb-2">Scan Artefak</h1>
-          <p className="text-gray">Ambil foto atau upload gambar artefak untuk mengetahui informasinya</p>
+      {/* Page Header */}
+      <div className="bg-white shadow-sm">
+        <div className="container py-4">
+          <h1 className="text-xl font-bold text-secondary">Scan Artefak</h1>
+          <p className="text-gray text-sm mt-1">Identifikasi artefak dengan AI</p>
         </div>
+      </div>
 
-        {!selectedImage ? (
-          <div className="space-y-6">
-            {/* Upload Area */}
-            <div className="bg-white rounded-xl p-8 text-center">
-              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera size={32} className="text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-secondary mb-2">Pilih Gambar Artefak</h3>
-              <p className="text-gray text-sm mb-6">Ambil foto atau pilih dari galeri</p>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
-              
+      <div className="container py-6">
+        {/* Camera Modal */}
+        {showCamera && (
+          <div className="fixed inset-0 bg-black z-50 flex flex-col">
+            <div className="flex items-center justify-between p-4 bg-black/50">
+              <h3 className="text-white font-semibold">Ambil Foto</h3>
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="btn btn-primary flex items-center justify-center mx-auto"
+                onClick={stopCamera}
+                className="p-2 bg-white/20 rounded-full text-white"
               >
-                <Upload size={20} className="mr-2" />
-                Pilih Gambar
+                <X size={20} />
               </button>
             </div>
-
-            {/* Instructions */}
-            <div className="bg-white rounded-xl p-6">
-              <h4 className="font-semibold text-secondary mb-3">Tips untuk hasil terbaik:</h4>
-              <ul className="space-y-2 text-gray text-sm">
-                <li>• Pastikan artefak terlihat jelas dalam foto</li>
-                <li>• Gunakan pencahayaan yang cukup</li>
-                <li>• Hindari bayangan yang menutupi artefak</li>
-                <li>• Ambil foto dari jarak yang tidak terlalu jauh</li>
-              </ul>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Selected Image */}
-            <div className="bg-white rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-secondary">Gambar Terpilih</h3>
+            
+            <div className="flex-1 relative">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
                 <button
-                  onClick={resetScan}
-                  className="p-2 text-gray hover:text-red-500 transition-colors"
+                  onClick={capturePhoto}
+                  className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <X size={20} />
+                  <Camera size={24} className="text-gray-800" />
                 </button>
               </div>
-              
-              <div className="relative">
-                <img
-                  src={URL.createObjectURL(selectedImage)}
-                  alt="Selected artifact"
+            </div>
+            
+            <canvas ref={canvasRef} className="hidden" />
+          </div>
+        )}
+
+        {/* Upload Section */}
+        {!scanResult && (
+          <div className="bg-white rounded-xl p-6 mb-6">
+            <h2 className="text-lg font-semibold text-secondary mb-4">Pilih Gambar Artefak</h2>
+            
+            {previewImage ? (
+              <div className="mb-4">
+                <img 
+                  src={previewImage} 
+                  alt="Preview" 
                   className="w-full h-64 object-cover rounded-lg"
                 />
-              </div>
-              
-              <div className="mt-4 flex space-x-3">
                 <button
-                  onClick={handleScan}
-                  disabled={isLoading}
-                  className="btn btn-primary flex-1 flex items-center justify-center"
+                  onClick={resetScan}
+                  className="mt-3 text-red-500 text-sm flex items-center space-x-1"
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader size={20} className="mr-2 animate-spin" />
-                      Memindai...
-                    </>
-                  ) : (
-                    <>
-                      <Camera size={20} className="mr-2" />
-                      Scan Artefak
-                    </>
-                  )}
+                  <X size={16} />
+                  <span>Hapus Gambar</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <button
+                  onClick={startCamera}
+                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary transition-colors"
+                >
+                  <Camera size={32} className="text-primary mb-2" />
+                  <span className="text-sm font-medium text-secondary">Ambil Foto</span>
+                  <span className="text-xs text-gray">Gunakan kamera</span>
                 </button>
                 
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="btn btn-secondary"
+                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary transition-colors"
                 >
-                  Ganti Gambar
+                  <Upload size={32} className="text-primary mb-2" />
+                  <span className="text-sm font-medium text-secondary">Upload Gambar</span>
+                  <span className="text-xs text-gray">Dari galeri</span>
                 </button>
               </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-                {error}
-              </div>
             )}
 
-            {/* Scan Result */}
-            {result && (
-              <div className="bg-white rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-secondary mb-4">Hasil Scan</h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-gray text-sm">Nama Artefak:</span>
-                    <p className="font-medium text-secondary">{result.name || 'Tidak diketahui'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray text-sm">Tingkat Kepercayaan:</span>
-                    <p className="font-medium text-secondary">{result.confidence ? `${(result.confidence * 100).toFixed(1)}%` : 'N/A'}</p>
-                  </div>
-                  {result.description && (
-                    <div>
-                      <span className="text-gray text-sm">Deskripsi:</span>
-                      <p className="text-secondary mt-1">{result.description}</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
+            {selectedImage && (
+              <button
+                onClick={handleScan}
+                disabled={isScanning}
+                className="w-full btn btn-primary flex items-center justify-center space-x-2"
+              >
+                {isScanning ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Memindai...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap size={18} />
+                    <span>Scan Artefak</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* Scan Result */}
+        {scanResult && (
+          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-secondary">Hasil Scan</h3>
+                <button
+                  onClick={resetScan}
+                  className="text-primary text-sm font-medium"
+                >
+                  Scan Lagi
+                </button>
+              </div>
+
+              {scanResult.artifact ? (
+                <div>
+                  <h4 className="text-xl font-bold text-secondary mb-2">
+                    {scanResult.artifact.title}
+                  </h4>
+                  
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="text-sm text-gray">
+                      Confidence: {Math.round(scanResult.confidence * 100)}%
                     </div>
-                  )}
+                    <div className="text-sm text-gray">
+                      Period: {scanResult.artifact.period || 'Unknown'}
+                    </div>
+                  </div>
+
+                  <p className="text-gray mb-4">
+                    {scanResult.artifact.description}
+                  </p>
+
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => window.location.href = `/artifacts/${scanResult.artifact.artifactID}`}
+                      className="btn btn-primary flex items-center space-x-2"
+                    >
+                      <Eye size={16} />
+                      <span>Lihat Detail</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleBookmark(scanResult.artifact.artifactID)}
+                      className={`btn ${scanResult.isBookmarked ? 'btn-secondary' : 'btn-outline'} flex items-center space-x-2`}
+                    >
+                      <Bookmark size={16} />
+                      <span>{scanResult.isBookmarked ? 'Tersimpan' : 'Simpan'}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Camera size={32} className="text-gray-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-secondary mb-2">
+                    Artefak Tidak Dikenali
+                  </h4>
+                  <p className="text-gray mb-4">
+                    Maaf, kami tidak dapat mengidentifikasi artefak ini. Coba dengan gambar yang lebih jelas atau artefak lain.
+                  </p>
+                  <button
+                    onClick={resetScan}
+                    className="btn btn-primary"
+                  >
+                    Coba Lagi
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isScanning && (
+          <div className="bg-white rounded-xl p-8">
+            <LoadingSpinner text="Menganalisis artefak dengan AI..." />
           </div>
         )}
       </div>

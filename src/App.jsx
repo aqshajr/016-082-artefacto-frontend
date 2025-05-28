@@ -15,6 +15,17 @@ import TemplesPage from './pages/TemplesPage.jsx';
 import TempleDetailPage from './pages/TempleDetailPage.jsx';
 import ArtifactDetailPage from './pages/ArtifactDetailPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
+import MyTicketsPage from './pages/MyTicketsPage.jsx';
+import BookmarkPage from './pages/BookmarkPage.jsx';
+import TicketsPage from './pages/TicketsPage.jsx';
+
+// Import halaman admin
+import AdminTemplesPage from './pages/admin/AdminTemplesPage.jsx';
+import CreateTemplePage from './pages/admin/CreateTemplePage.jsx';
+import EditTemplePage from './pages/admin/EditTemplePage.jsx';
+import AdminArtifactsPage from './pages/admin/AdminArtifactsPage.jsx';
+import AdminTicketsPage from './pages/admin/AdminTicketsPage.jsx';
+import AdminTransactionsPage from './pages/admin/AdminTransactionsPage.jsx';
 
 // Placeholder components untuk halaman yang belum dibuat
 const PlaceholderPage = ({ title }) => (
@@ -74,7 +85,7 @@ function AppContent() {
           path="/my-tickets" 
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Tiket Saya" />
+              <MyTicketsPage />
             </ProtectedRoute>
           } 
         />
@@ -92,7 +103,7 @@ function AppContent() {
           path="/tickets" 
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Daftar Tiket" />
+              <TicketsPage />
             </ProtectedRoute>
           } 
         />
@@ -165,7 +176,7 @@ function AppContent() {
           path="/admin/temples" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Kelola Candi (Admin)" />
+              <AdminTemplesPage />
             </ProtectedRoute>
           } 
         />
@@ -174,7 +185,7 @@ function AppContent() {
           path="/admin/temples/create" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Tambah Candi (Admin)" />
+              <CreateTemplePage />
             </ProtectedRoute>
           } 
         />
@@ -183,7 +194,7 @@ function AppContent() {
           path="/admin/temples/:id/edit" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Edit Candi (Admin)" />
+              <EditTemplePage />
             </ProtectedRoute>
           } 
         />
@@ -192,7 +203,7 @@ function AppContent() {
           path="/admin/artifacts" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Kelola Artefak (Admin)" />
+              <AdminArtifactsPage />
             </ProtectedRoute>
           } 
         />
@@ -219,7 +230,7 @@ function AppContent() {
           path="/admin/tickets" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Kelola Tiket (Admin)" />
+              <AdminTicketsPage />
             </ProtectedRoute>
           } 
         />
@@ -246,7 +257,16 @@ function AppContent() {
           path="/admin/transactions" 
           element={
             <ProtectedRoute requireAdmin={true}>
-              <PlaceholderPage title="Kelola Transaksi (Admin)" />
+              <AdminTransactionsPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/bookmarks" 
+          element={
+            <ProtectedRoute>
+              <BookmarkPage />
             </ProtectedRoute>
           } 
         />

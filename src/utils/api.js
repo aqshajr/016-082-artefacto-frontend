@@ -86,13 +86,23 @@ export const authAPI = {
       // New structure: response.data.data.token
       Cookies.set('authToken', response.data.data.token, { expires: 7 });
       if (response.data.data.user && response.data.data.user.role !== undefined) {
-        Cookies.set('userRole', response.data.data.user.role, { expires: 7 });
+        let role = response.data.data.user.role;
+        // Convert boolean role to integer string (true = "1", false = "0")
+        if (typeof role === 'boolean') {
+          role = role ? 1 : 0;
+        }
+        Cookies.set('userRole', role.toString(), { expires: 7 });
       }
     } else if (response.data.token) {
       // Old structure: response.data.token
       Cookies.set('authToken', response.data.token, { expires: 7 });
       if (response.data.user && response.data.user.role !== undefined) {
-        Cookies.set('userRole', response.data.user.role, { expires: 7 });
+        let role = response.data.user.role;
+        // Convert boolean role to integer string (true = "1", false = "0")
+        if (typeof role === 'boolean') {
+          role = role ? 1 : 0;
+        }
+        Cookies.set('userRole', role.toString(), { expires: 7 });
       }
     }
     
@@ -134,7 +144,8 @@ export const authAPI = {
   updateProfile: async (formData) => {
     const response = await apiClient.put('/auth/profile', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        'Content-Type': undefined,
       },
     });
     return response.data;
@@ -259,11 +270,30 @@ export const templeAPI = {
 
   // Buat candi baru (Admin only)
   createTemple: async (formData) => {
+    console.log('=== API createTemple Debug ===');
+    console.log('FormData received in API:', formData);
+    console.log('FormData constructor:', formData.constructor.name);
+    
+    // Log FormData contents
+    if (formData instanceof FormData) {
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  ${key}: "${value}"`);
+        }
+      }
+    }
+    
+    console.log('Making POST request to /temples...');
     const response = await apiClient.post('/temples', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        'Content-Type': undefined,
       },
     });
+    console.log('=== End API createTemple Debug ===');
     return response.data;
   },
 
@@ -271,7 +301,8 @@ export const templeAPI = {
   updateTemple: async (id, formData) => {
     const response = await apiClient.put(`/temples/${id}`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        'Content-Type': undefined,
       },
     });
     return response.data;
@@ -302,7 +333,8 @@ export const artifactAPI = {
   createArtifact: async (formData) => {
     const response = await apiClient.post('/artifacts', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        'Content-Type': undefined,
       },
     });
     return response.data;
@@ -312,7 +344,8 @@ export const artifactAPI = {
   updateArtifact: async (id, formData) => {
     const response = await apiClient.put(`/artifacts/${id}`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        'Content-Type': undefined,
       },
     });
     return response.data;
@@ -340,16 +373,23 @@ export const artifactAPI = {
 // API functions untuk Machine Learning (prediksi artefak)
 export const mlAPI = {
   // Prediksi artefak dari gambar
-  predictArtifact: async (imageFile) => {
-    const formData = new FormData();
-    formData.append('file', imageFile);
-
-    const response = await mlApiClient.post('/predict', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+  predictArtifact: async (formData) => {
+    try {
+      const response = await mlApiClient.post('/predict', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 60000, // Increase timeout for ML processing
+      });
+      return response.data;
+    } catch (error) {
+      // Handle CORS and network errors specifically
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.error('CORS or network error:', error);
+        throw new Error('CORS_ERROR');
+      }
+      throw error;
+    }
   },
 };
 

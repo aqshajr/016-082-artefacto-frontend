@@ -31,6 +31,8 @@ export const AuthProvider = ({ children }) => {
       const authenticated = authAPI.isAuthenticated();
       const role = authAPI.getUserRole();
       
+      console.log('Checking auth status:', { authenticated, role });
+      
       setIsAuthenticated(authenticated);
       setUserRole(role);
       
@@ -41,6 +43,27 @@ export const AuthProvider = ({ children }) => {
         if (savedUser) {
           try {
             const userData = JSON.parse(savedUser);
+            console.log('Loaded user data from localStorage:', userData);
+            
+            // Pastikan role konsisten antara localStorage dan cookies
+            if (userData.role !== undefined) {
+              let userRole = userData.role;
+              // Convert boolean role to integer if needed
+              if (typeof userRole === 'boolean') {
+                userRole = userRole ? 1 : 0;
+                console.log('Converted boolean role from localStorage to integer:', userRole);
+                // Update userData dengan role yang sudah dikonversi
+                userData.role = userRole;
+              }
+              
+              const userRoleString = userRole.toString();
+              setUserRole(userRoleString);
+              // Update cookie jika berbeda
+              if (role !== userRoleString) {
+                Cookies.set('userRole', userRoleString, { expires: 7 });
+              }
+            }
+            
             setUser(userData);
           } catch (e) {
             console.error('Error parsing saved user data:', e);
@@ -72,6 +95,59 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Function untuk refresh user profile dari API
+  const refreshUserProfile = async () => {
+    try {
+      const token = Cookies.get('authToken');
+      if (!token) {
+        console.warn('No auth token found');
+        return { success: false, error: 'No authentication token' };
+      }
+
+      console.log('Refreshing user profile...');
+      const profileResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://artefacto-backend-749281711221.us-central1.run.app/api'}/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        console.log('Refreshed profile data:', profileData);
+
+        if (profileData.data && profileData.data.user) {
+          const userData = profileData.data.user;
+          let userRole = userData.role !== undefined ? userData.role : 0;
+
+          // Convert boolean role to integer (true = 1, false = 0)
+          if (typeof userRole === 'boolean') {
+            userRole = userRole ? 1 : 0;
+            console.log('Converted boolean role to integer in refresh:', userRole);
+          }
+
+          console.log('Updated user role from profile:', userRole);
+
+          // Update state
+          setUser(userData);
+          setUserRole(userRole.toString());
+
+          // Update localStorage dan cookies
+          localStorage.setItem('userData', JSON.stringify(userData));
+          Cookies.set('userRole', userRole.toString(), { expires: 7 });
+
+          return { success: true, data: userData };
+        }
+      } else {
+        console.error('Failed to refresh profile:', profileResponse.status);
+        return { success: false, error: 'Failed to fetch profile' };
+      }
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   // Function untuk login
   const login = async (email, password) => {
     try {
@@ -86,7 +162,87 @@ export const AuthProvider = ({ children }) => {
         // New structure: response.data.user
         const userData = response.data.user;
         const token = response.data.token;
-        const userRole = userData.role !== undefined ? userData.role : 0;
+        
+        console.log('User data from login:', userData);
+        console.log('Role from login response:', userData.role);
+        
+        // Selalu ambil profile untuk mendapatkan role yang akurat dari database
+        let finalUserData = userData;
+        let userRole = userData.role !== undefined ? userData.role : null;
+        
+        // Convert boolean role to integer (true = 1, false = 0)
+        if (typeof userRole === 'boolean') {
+          userRole = userRole ? 1 : 0;
+          console.log('Converted boolean role to integer:', userRole);
+        }
+        
+        console.log('Fetching user profile to get accurate role...');
+        try {
+          // Ambil profile untuk mendapatkan role yang akurat
+          const profileResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://artefacto-backend-749281711221.us-central1.run.app/api'}/auth/profile`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            console.log('Profile response:', profileData);
+            
+            if (profileData.data && profileData.data.user) {
+              // Gunakan data dari profile yang lebih lengkap dan akurat
+              finalUserData = {
+                ...userData,
+                ...profileData.data.user,
+                id: profileData.data.user.userID || userData.id, // Pastikan id konsisten
+              };
+              
+              if (profileData.data.user.role !== undefined) {
+                let profileRole = profileData.data.user.role;
+                // Convert boolean role to integer if needed
+                if (typeof profileRole === 'boolean') {
+                  profileRole = profileRole ? 1 : 0;
+                  console.log('Converted profile boolean role to integer:', profileRole);
+                }
+                userRole = profileRole;
+                console.log('Role from profile:', userRole);
+              }
+            }
+          } else {
+            console.warn('Failed to fetch profile, using login data');
+          }
+        } catch (profileError) {
+          console.error('Error fetching profile for role:', profileError);
+          console.warn('Using role from login response');
+        }
+        
+        // Set default role jika masih null
+        if (userRole === null) {
+          userRole = 0; // Default to user role
+        }
+        
+        console.log('Final user data:', finalUserData);
+        console.log('Final user role:', userRole);
+        
+        setIsAuthenticated(true);
+        setUserRole(userRole.toString());
+        setUser(finalUserData);
+        
+        // Simpan user data ke localStorage
+        localStorage.setItem('userData', JSON.stringify(finalUserData));
+        
+        // Pastikan role tersimpan di cookies juga
+        Cookies.set('userRole', userRole.toString(), { expires: 7 });
+        
+        return { success: true, data: response };
+      } else if (response && response.user && response.user.role !== undefined) {
+        // Old structure: response.user
+        const userData = response.user;
+        let userRole = userData.role !== undefined ? userData.role : 0;
+        
+        console.log('User data from login (old structure):', userData);
+        console.log('User role from login (old structure):', userRole);
         
         setIsAuthenticated(true);
         setUserRole(userRole.toString());
@@ -95,18 +251,12 @@ export const AuthProvider = ({ children }) => {
         // Simpan user data ke localStorage
         localStorage.setItem('userData', JSON.stringify(userData));
         
-        return { success: true, data: response };
-      } else if (response && response.user && response.user.role !== undefined) {
-        // Old structure: response.user
-        setIsAuthenticated(true);
-        setUserRole(response.user.role.toString());
-        setUser(response.user);
-        
-        // Simpan user data ke localStorage
-        localStorage.setItem('userData', JSON.stringify(response.user));
+        // Pastikan role tersimpan di cookies juga
+        Cookies.set('userRole', userRole.toString(), { expires: 7 });
         
         return { success: true, data: response };
       } else {
+        console.error('Invalid response structure:', response);
         throw new Error('Invalid response structure from server');
       }
     } catch (error) {
@@ -156,7 +306,13 @@ export const AuthProvider = ({ children }) => {
         const token = response.data.token;
         
         // Set default role to 0 (user) if not provided
-        const userRole = userData.role !== undefined ? userData.role : 0;
+        let userRole = userData.role !== undefined ? userData.role : 0;
+        
+        // Convert boolean role to integer (true = 1, false = 0)
+        if (typeof userRole === 'boolean') {
+          userRole = userRole ? 1 : 0;
+          console.log('Converted boolean role to integer in register:', userRole);
+        }
         
         setIsAuthenticated(true);
         setUserRole(userRole.toString());
@@ -329,6 +485,7 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     deleteAccount,
     checkAuthStatus,
+    refreshUserProfile,
     
     // Helper functions
     isAdmin,

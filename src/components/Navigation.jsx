@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Ticket, Camera, MapPin, User, Settings, LogOut } from 'lucide-react';
+import { Home, Ticket, Camera, Bookmark, MapPin, User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const Navigation = () => {
@@ -24,7 +24,7 @@ const Navigation = () => {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/my-tickets', icon: Ticket, label: 'Tiket' },
     { path: '/scan', icon: Camera, label: 'Scan' },
-    { path: '/temples', icon: MapPin, label: 'Candi' },
+    { path: '/bookmarks', icon: Bookmark, label: 'Bookmark' },
     { path: '/profile', icon: User, label: 'Profil' }
   ];
 
@@ -44,11 +44,11 @@ const Navigation = () => {
         <div className="container py-2">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
+              <div className="w-5 h-5 bg-primary rounded-md flex items-center justify-center">
                 <img 
-                  src="https://storage.googleapis.com/artefacto-backend-service/assets/logo.jpg"
+                  src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                   alt="Artefacto Logo"
-                  className="w-4 h-4 object-contain"
+                  className="w-3 h-3 object-contain"
                 />
               </div>
               <div>
@@ -70,7 +70,7 @@ const Navigation = () => {
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-inset-bottom">
-        <div className="grid grid-cols-5 h-14">
+        <div className={`grid ${navItems.length === 4 ? 'grid-cols-4' : 'grid-cols-5'} h-14`}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;

@@ -103,13 +103,11 @@ const ProfilePage = () => {
         return;
       }
 
-      // Jika ada perubahan selain foto, currentPassword wajib
-      const hasNonPhotoChanges = formData.username !== user.username || 
-                                formData.email !== user.email || 
-                                formData.newPassword;
+      // Password saat ini hanya wajib jika mengubah email atau password baru
+      const requiresPassword = formData.email !== user.email || formData.newPassword;
       
-      if (hasNonPhotoChanges && !formData.currentPassword) {
-        setError('Password saat ini diperlukan untuk mengubah data profil.');
+      if (requiresPassword && !formData.currentPassword) {
+        setError('Password saat ini diperlukan untuk mengubah email atau password.');
         return;
       }
 
@@ -248,10 +246,10 @@ const ProfilePage = () => {
             <div className="space-y-6">
               {/* Profile Picture */}
               <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/20">
                   {user?.profilePicture ? (
                     <img 
-                      src={user.profilePicture} 
+                      src={`${user.profilePicture}?t=${Date.now()}`}
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />
@@ -285,7 +283,7 @@ const ProfilePage = () => {
             <form onSubmit={handleEditProfile} className="space-y-6">
               {/* Profile Picture Upload */}
               <div className="flex flex-col items-center space-y-4">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/20">
                   {previewImage ? (
                     <img 
                       src={previewImage} 
@@ -294,7 +292,7 @@ const ProfilePage = () => {
                     />
                   ) : user?.profilePicture ? (
                     <img 
-                      src={user.profilePicture} 
+                      src={`${user.profilePicture}?t=${Date.now()}`}
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />
@@ -358,7 +356,7 @@ const ProfilePage = () => {
                       value={formData.currentPassword}
                       onChange={handleInputChange}
                       className="form-input pr-12"
-                      placeholder="Diperlukan untuk update profil"
+                      placeholder="Diperlukan untuk ubah email/password"
                     />
                     <button
                       type="button"
@@ -368,7 +366,7 @@ const ProfilePage = () => {
                       {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
-                  <p className="text-xs text-gray mt-1">Masukkan password saat ini untuk konfirmasi perubahan</p>
+                  <p className="text-xs text-gray mt-1">Hanya diperlukan jika mengubah email atau password</p>
                 </div>
                 <div>
                   <label className="form-label">Password Baru (Opsional)</label>
@@ -419,7 +417,7 @@ const ProfilePage = () => {
         {/* Danger Zone - Only for regular users */}
         {!isAdmin() && (
           <div className="bg-white rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-red-600 mb-4">Zona Berbahaya</h3>
+            <h3 className="text-lg font-semibold text-red-600 mb-4">Hapus Akun</h3>
             <p className="text-gray mb-4">
               Tindakan ini tidak dapat dibatalkan. Semua data Anda akan dihapus secara permanen.
             </p>

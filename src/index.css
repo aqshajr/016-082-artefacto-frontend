@@ -152,6 +152,14 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid-cols-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .gap-2 { gap: var(--spacing-2); }
 .gap-4 { gap: var(--spacing-4); }
 .gap-6 { gap: var(--spacing-6); }
@@ -528,8 +536,8 @@ p {
   
   .grid-cols-2 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-  
+}
+
   .grid-cols-3 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
@@ -563,6 +571,10 @@ p {
   
   .grid-cols-md-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .md\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -630,7 +642,7 @@ p {
 ::-webkit-scrollbar-thumb {
   background: var(--accent-brown);
   border-radius: var(--radius-md);
-}
+  }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-gold);

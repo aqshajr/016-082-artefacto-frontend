@@ -89,7 +89,7 @@ const LoginPage = () => {
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <img 
-                src="https://storage.googleapis.com/artefacto-backend-service/assets/logo.jpg"
+                src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                 alt="Artefacto Logo"
                 className="w-12 h-12 object-contain"
               />
