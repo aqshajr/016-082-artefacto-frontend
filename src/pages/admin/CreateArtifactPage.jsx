@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Package, FileText, MapPin, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Upload, Package, FileText, MapPin, Lightbulb, LogOut } from 'lucide-react';
 import { artifactAPI, templeAPI } from '../../utils/api';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
 const CreateArtifactPage = () => {
@@ -25,6 +26,7 @@ const CreateArtifactPage = () => {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [validatedFields, setValidatedFields] = useState(new Set());
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -305,6 +307,13 @@ const CreateArtifactPage = () => {
     navigate('/admin/artifacts');
   };
 
+  const handleLogout = () => {
+    if (window.confirm('Apakah Anda yakin ingin keluar?')) {
+      logout();
+      navigate('/login');
+    }
+  };
+
   if (templesLoading) {
     return <LoadingSpinner text="Memuat data candi..." />;
   }
@@ -315,9 +324,82 @@ const CreateArtifactPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Page Header */}
+      {/* Header with Logo, Title, Welcome Text, and Logout */}
       <div className="bg-white shadow-sm">
         <div className="container py-4">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            {/* Left: Logo and Title */}
+            <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
+              <div style={{ 
+                width: '80px', 
+                height: '80px', 
+                backgroundColor: '#d4a464', 
+                borderRadius: '12px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                marginRight: '24px'
+              }}>
+                <img 
+                  src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
+                  alt="Artefacto Logo"
+                  style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                />
+              </div>
+              <h1 style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                color: '#243e3e',
+                margin: '0 0 0 15px',
+                whiteSpace: 'nowrap'
+              }}>
+                Artefacto Admin Panel
+              </h1>
+            </div>
+            
+            {/* Center: Welcome Text */}
+            <div style={{ 
+              textAlign: 'left',
+              flex: '1 1 auto',
+              paddingLeft: '40px',
+              paddingRight: '40px'
+            }}>
+              <h2 style={{ 
+                fontSize: '18px', 
+                fontWeight: '700', 
+                color: '#243e3e',
+                lineHeight: '2',
+                margin: 0
+              }}>
+                Selamat datang, admin!
+              </h2>
+              <p style={{ 
+                fontSize: '16px', 
+                color: '#6c6c6c',
+                lineHeight: '1.2',
+                margin: '2px 0 0 0'
+              }}>
+                Tambah artefak baru ke sistem
+              </p>
+            </div>
+            
+            {/* Right: Logout Button */}
+            <div style={{ flex: '0 0 auto' }}>
+              <button
+                onClick={handleLogout}
+                className="btn btn-secondary flex items-center space-x-2"
+              >
+                <LogOut size={18} />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Breadcrumb Navigation */}
+      <div className="bg-white border-t border-gray-100">
+        <div className="container py-3">
           <div className="flex items-center space-x-3">
             <button
               onClick={handleCancel}
@@ -326,8 +408,8 @@ const CreateArtifactPage = () => {
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-secondary">Tambah Artefak Baru</h1>
-              <p className="text-gray text-sm mt-1">Lengkapi informasi artefak yang akan ditambahkan</p>
+              <h2 className="text-lg font-semibold text-secondary">Tambah Artefak Baru</h2>
+              <p className="text-gray text-sm">Lengkapi informasi artefak yang akan ditambahkan</p>
             </div>
           </div>
         </div>

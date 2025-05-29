@@ -43,14 +43,28 @@ const LoginPage = () => {
       
       if (result.success) {
         console.log('LoginPage: Login successful, redirecting...');
-        // Redirect berdasarkan role user
-        if (result.data.data && result.data.data.user && result.data.data.user.role === 1) {
-          navigate('/admin/temples');
-        } else if (result.data.user && result.data.user.role === 1) {
-          navigate('/admin/temples');
-        } else {
-          navigate(from);
+        
+        // Check if user is admin from user data in localStorage after login
+        const savedUser = localStorage.getItem('userData');
+        if (savedUser) {
+          try {
+            const userData = JSON.parse(savedUser);
+            console.log('User data after login:', userData);
+            
+            // Check if admin (role 1 or true)
+            if (userData.role === 1 || userData.role === true) {
+              console.log('Redirecting admin to /admin/temples');
+              navigate('/admin/temples');
+              return;
+            }
+          } catch (e) {
+            console.error('Error parsing user data:', e);
+          }
         }
+        
+        // Default redirect for regular users
+        console.log('Redirecting regular user to:', from);
+        navigate(from);
       } else {
         console.log('LoginPage: Login failed:', result.error);
         setError(result.error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Ticket, Calendar, MapPin, Clock, ChevronRight } from 'lucide-react';
+import { Ticket, Calendar, MapPin, Clock, CheckCircle } from 'lucide-react';
 import { ownedTicketAPI } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
@@ -8,6 +8,7 @@ const MyTicketsPage = () => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [redeemLoading, setRedeemLoading] = useState(null);
 
   useEffect(() => {
     fetchOwnedTickets();
@@ -18,8 +19,8 @@ const MyTicketsPage = () => {
       setIsLoading(true);
       const response = await ownedTicketAPI.getOwnedTickets();
       
-      if (response && response.data && response.data.tickets) {
-        setTickets(response.data.tickets);
+      if (response && response.data && response.data.ownedTickets) {
+        setTickets(response.data.ownedTickets);
       } else {
         setTickets([]);
       }
@@ -28,6 +29,29 @@ const MyTicketsPage = () => {
       setError('Gagal memuat tiket Anda. Silakan coba lagi.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleUseTicket = async (ownedTicketID) => {
+    try {
+      setRedeemLoading(ownedTicketID);
+      
+      // TODO: Call API to update ticket status
+      // For now, we'll simulate the update locally
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => 
+          ticket.ownedTicketID === ownedTicketID 
+            ? { ...ticket, usageStatus: 'Sudah Digunakan' }
+            : ticket
+        )
+      );
+      
+      alert('Tiket berhasil digunakan!');
+    } catch (err) {
+      console.error('Error using ticket:', err);
+      alert('Gagal menggunakan tiket. Silakan coba lagi.');
+    } finally {
+      setRedeemLoading(null);
     }
   };
 
@@ -69,32 +93,33 @@ const MyTicketsPage = () => {
       <div className="container py-6">
         {tickets.length > 0 ? (
           <div className="space-y-4">
-            {tickets.map((ticket) => (
-              <div key={ticket.ticketID} className="bg-white rounded-xl p-6 shadow-sm">
+            {tickets.map((ownedTicket) => (
+              <div key={ownedTicket.ownedTicketID} className="bg-white rounded-xl p-6 shadow-sm">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                       <Ticket size={24} className="text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary">{ticket.title}</h3>
-                      <p className="text-sm text-gray">{ticket.description}</p>
+                      <h3 className="font-semibold text-secondary">
+                        Tiket {ownedTicket.Ticket?.Temple?.title || 'Candi'}
+                      </h3>
+                      <p className="text-sm text-gray">{ownedTicket.Ticket?.description || 'Deskripsi tidak tersedia'}</p>
                     </div>
                   </div>
-                  <ChevronRight size={20} className="text-gray" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 gap-4 mb-4">
                   <div className="flex items-center space-x-2">
                     <Calendar size={16} className="text-gray" />
                     <span className="text-sm text-gray">
-                      {ticket.validDate ? formatDate(ticket.validDate) : 'Tanggal tidak tersedia'}
+                      Status: {ownedTicket.usageStatus || 'Aktif'}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock size={16} className="text-gray" />
                     <span className="text-sm text-gray">
-                      {ticket.validTime || 'Waktu tidak tersedia'}
+                      Kode Tiket: {ownedTicket.uniqueCode}
                     </span>
                   </div>
                 </div>
@@ -103,18 +128,41 @@ const MyTicketsPage = () => {
                   <div className="flex items-center space-x-2">
                     <MapPin size={16} className="text-gray" />
                     <span className="text-sm text-gray">
-                      {ticket.location || 'Lokasi tidak tersedia'}
+                      {ownedTicket.Ticket?.Temple?.title || 'Lokasi tidak tersedia'}
                     </span>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-primary">
-                      {ticket.price ? formatPrice(ticket.price) : 'Harga tidak tersedia'}
+                      {ownedTicket.Ticket?.price ? formatPrice(ownedTicket.Ticket.price) : 'Harga tidak tersedia'}
                     </div>
                     <div className="text-xs text-gray">
-                      Status: {ticket.status || 'Aktif'}
+                      Status: {ownedTicket.usageStatus || 'Aktif'}
                     </div>
                   </div>
                 </div>
+
+                {/* Use Ticket Button */}
+                {ownedTicket.usageStatus === 'Belum Digunakan' && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <button
+                      onClick={() => handleUseTicket(ownedTicket.ownedTicketID)}
+                      disabled={redeemLoading === ownedTicket.ownedTicketID}
+                      className="w-full btn btn-primary flex items-center justify-center space-x-2"
+                    >
+                      {redeemLoading === ownedTicket.ownedTicketID ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Memproses...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={18} />
+                          <span>Gunakan Tiket</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -241,6 +241,12 @@ export const transactionAPI = {
     return response.data;
   },
 
+  // Dapatkan semua transaksi untuk admin (semua user)
+  getAllTransactionsAdmin: async () => {
+    const response = await apiClient.get('/transactions/admin/all');
+    return response.data;
+  },
+
   // Dapatkan detail transaksi berdasarkan ID
   getTransactionById: async (id) => {
     const response = await apiClient.get(`/transactions/${id}`);

@@ -8,8 +8,19 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin, logout } = useAuth();
 
-  // Jangan tampilkan navigation di halaman auth
-  const hideNavigation = ['/login', '/register', '/onboarding'].includes(location.pathname);
+  // Jangan tampilkan navigation di halaman auth dan admin
+  const hideNavigation = [
+    '/login', 
+    '/register', 
+    '/onboarding',
+    '/admin/temples',
+    '/admin/temples/create',
+    '/admin/artifacts',
+    '/admin/artifacts/create', 
+    '/admin/tickets',
+    '/admin/tickets/create',
+    '/admin/transactions'
+  ].includes(location.pathname) || location.pathname.includes('/admin/temples/') || location.pathname.includes('/admin/artifacts/') || location.pathname.includes('/admin/tickets/');
   
   if (hideNavigation || !isAuthenticated) {
     return null;

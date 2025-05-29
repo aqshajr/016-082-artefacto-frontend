@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Ticket, Plus, Edit, Trash2, DollarSign, Search } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Ticket, Plus, Edit, Trash2, DollarSign, Search, LogOut, MapPin, Camera, Settings } from 'lucide-react';
 import { ticketAPI, templeAPI } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
@@ -14,8 +14,9 @@ const AdminTicketsPage = () => {
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [selectedTemple, setSelectedTemple] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchData();
@@ -101,6 +102,13 @@ const AdminTicketsPage = () => {
     return templeMatch && searchMatch;
   });
 
+  const handleLogout = () => {
+    if (window.confirm('Apakah Anda yakin ingin keluar?')) {
+      logout();
+      navigate('/login');
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner text="Memuat data tiket..." />;
   }
@@ -111,67 +119,130 @@ const AdminTicketsPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Welcome Header */}
+      {/* Header with Logo, Title, Welcome Text, and Logout */}
       <div className="bg-white shadow-sm">
         <div className="container py-4">
-          <div className="mb-4">
-            <h1 className="text-xl font-bold text-secondary">
-              Selamat datang, {user?.username || 'Admin'}!
-            </h1>
-            <p className="text-gray text-sm">Kelola data tiket dan harga</p>
-          </div>
-          
-          {/* Stats and Controls */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-primary/10 rounded-xl px-4 py-2">
-              <div className="text-lg font-bold text-primary">{tickets.length}</div>
-              <div className="text-xs text-gray">Total Jenis Tiket</div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <select
-                value={selectedTemple}
-                onChange={(e) => setSelectedTemple(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="">Semua Candi</option>
-                {temples.map((temple) => (
-                  <option key={temple.templeID} value={temple.templeID}>
-                    {temple.title}
-                  </option>
-                ))}
-              </select>
-              
-              <div className="relative">
-                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray" />
-                <input
-                  type="text"
-                  placeholder="Cari tiket..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            {/* Left: Logo and Title */}
+            <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
+              <div style={{ 
+                width: '80px', 
+                height: '80px', 
+                backgroundColor: '#d4a464', 
+                borderRadius: '12px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                marginRight: '24px'
+              }}>
+                <img 
+                  src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
+                  alt="Artefacto Logo"
+                  style={{ width: '90px', height: '90px', objectFit: 'contain' }}
                 />
               </div>
-              
+              <h1 style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                color: '#243e3e',
+                margin: '0 0 0 15px',
+                whiteSpace: 'nowrap'
+              }}>
+                Artefacto Admin Panel
+              </h1>
+            </div>
+            
+            {/* Center: Welcome Text */}
+            <div style={{ 
+              textAlign: 'left',
+              flex: '1 1 auto',
+              paddingLeft: '40px',
+              paddingRight: '40px'
+            }}>
+              <h2 style={{ 
+                fontSize: '18px', 
+                fontWeight: '700', 
+                color: '#243e3e',
+                lineHeight: '2',
+                margin: 0
+              }}>
+                Selamat datang, admin!
+              </h2>
+              <p style={{ 
+                fontSize: '16px', 
+                color: '#6c6c6c',
+                lineHeight: '1.2',
+                margin: '2px 0 0 0'
+              }}>
+                Kelola data tiket dan harga
+              </p>
+            </div>
+            
+            {/* Right: Logout Button */}
+            <div style={{ flex: '0 0 auto' }}>
               <button
-                onClick={handleCreateTicket}
-                className="btn btn-primary flex items-center space-x-2"
+                onClick={handleLogout}
+                className="btn btn-secondary flex items-center space-x-2"
               >
-                <Plus size={18} />
-                <span>Tambah Tiket</span>
+                <LogOut size={18} />
+                <span>Logout</span>
               </button>
             </div>
           </div>
-          
-          {(selectedTemple || searchQuery) && (
-            <div className="text-sm text-gray">
-              Menampilkan {filteredTickets.length} dari {tickets.length} tiket
-            </div>
-          )}
         </div>
       </div>
 
       <div className="container py-6">
+        {/* Stats and Controls */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl px-6 py-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl font-bold text-primary">{tickets.length}</div>
+              <div className="text-sm text-gray">Total Jenis Tiket</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <select
+              value={selectedTemple}
+              onChange={(e) => setSelectedTemple(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="">Semua Candi</option>
+              {temples.map((temple) => (
+                <option key={temple.templeID} value={temple.templeID}>
+                  {temple.title}
+                </option>
+              ))}
+            </select>
+            
+            <div className="relative">
+              <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray" />
+              <input
+                type="text"
+                placeholder="Cari tiket..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-64"
+              />
+            </div>
+            
+            <button
+              onClick={handleCreateTicket}
+              className="btn btn-primary flex items-center space-x-2 py-3"
+            >
+              <Plus size={18} />
+              <span>Tambah Tiket</span>
+            </button>
+          </div>
+        </div>
+
+        {(selectedTemple || searchQuery) && (
+          <div className="text-sm text-gray mb-6">
+            Menampilkan {filteredTickets.length} dari {tickets.length} tiket
+          </div>
+        )}
+
         {/* Tickets List */}
         {filteredTickets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -254,6 +325,63 @@ const AdminTicketsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Admin Bottom Navigation - Clean Design */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50" style={{ width: '100vw' }}>
+        <div className="flex h-20" style={{ width: '100%' }}>
+          <div
+            onClick={() => navigate('/admin/temples')}
+            className={`flex-1 flex flex-col items-center justify-center space-y-1 transition-colors cursor-pointer ${
+              location.pathname === '/admin/temples'
+                ? 'text-primary bg-primary/10' 
+                : 'text-gray hover:text-primary hover:bg-primary/5'
+            }`}
+            style={{ borderRight: 'none' }}
+          >
+            <MapPin size={22} />
+            <span className="text-xs font-medium">Candi</span>
+          </div>
+          
+          <div
+            onClick={() => navigate('/admin/artifacts')}
+            className={`flex-1 flex flex-col items-center justify-center space-y-1 transition-colors cursor-pointer ${
+              location.pathname === '/admin/artifacts'
+                ? 'text-primary bg-primary/10' 
+                : 'text-gray hover:text-primary hover:bg-primary/5'
+            }`}
+            style={{ borderRight: 'none' }}
+          >
+            <Camera size={22} />
+            <span className="text-xs font-medium">Artefak</span>
+          </div>
+          
+          <div
+            onClick={() => navigate('/admin/tickets')}
+            className={`flex-1 flex flex-col items-center justify-center space-y-1 transition-colors cursor-pointer ${
+              location.pathname === '/admin/tickets'
+                ? 'text-primary bg-primary/10' 
+                : 'text-gray hover:text-primary hover:bg-primary/5'
+            }`}
+            style={{ borderRight: 'none' }}
+          >
+            <Ticket size={22} />
+            <span className="text-xs font-medium">Tiket</span>
+          </div>
+          
+          <div
+            onClick={() => navigate('/admin/transactions')}
+            className={`flex-1 flex flex-col items-center justify-center space-y-1 transition-colors cursor-pointer ${
+              location.pathname === '/admin/transactions'
+                ? 'text-primary bg-primary/10' 
+                : 'text-gray hover:text-primary hover:bg-primary/5'
+            }`}
+            style={{ borderRight: 'none' }}
+          >
+            <Settings size={22} />
+            <span className="text-xs font-medium">Transaksi</span>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 };
