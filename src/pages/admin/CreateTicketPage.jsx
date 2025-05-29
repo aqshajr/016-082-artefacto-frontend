@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Ticket, FileText, MapPin, DollarSign } from 'lucide-react';
+import { ArrowLeft, Ticket, FileText, MapPin, DollarSign, LogOut, ChevronDown } from 'lucide-react';
 import { ticketAPI, templeAPI } from '../../utils/api';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 
 const CreateTicketPage = () => {
@@ -16,11 +17,27 @@ const CreateTicketPage = () => {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [validatedFields, setValidatedFields] = useState(new Set());
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchTemples();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('.relative')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const fetchTemples = async () => {
     try {
@@ -111,6 +128,24 @@ const CreateTicketPage = () => {
     }));
   };
 
+  const handleTempleSelect = (templeID) => {
+    setFormData(prev => ({
+      ...prev,
+      templeID: templeID
+    }));
+    setIsDropdownOpen(false);
+    
+    // Validate temple selection
+    if (validatedFields.has('templeID')) {
+      const fieldError = validateField('templeID', templeID);
+      setFieldErrors(prev => ({
+        ...prev,
+        ...fieldError,
+        ...(Object.keys(fieldError).length === 0 ? { templeID: undefined } : {})
+      }));
+    }
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -186,6 +221,13 @@ const CreateTicketPage = () => {
     navigate('/admin/tickets');
   };
 
+  const handleLogout = () => {
+    if (window.confirm('Apakah Anda yakin ingin keluar?')) {
+      logout();
+      navigate('/login');
+    }
+  };
+
   if (templesLoading) {
     return <LoadingSpinner text="Memuat data candi..." />;
   }
@@ -196,158 +238,266 @@ const CreateTicketPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Page Header */}
+      {/* Single Header */}
       <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleCancel}
-              className="p-2 text-gray hover:text-secondary transition-colors"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-secondary">Tambah Tiket Baru</h1>
-              <p className="text-gray text-sm mt-1">Lengkapi informasi tiket yang akan ditambahkan</p>
+        <div style={{ padding: '16px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', width: '100%' }}>
+            {/* Left: Logo and Title */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '20px' }}>
+              <div style={{ 
+                width: '70px', 
+                height: '70px', 
+                backgroundColor: '#d4a464', 
+                borderRadius: '12px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                marginRight: '32px',
+                marginLeft: '16px'
+              }}>
+                <img 
+                  src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
+                  alt="Artefacto Logo"
+                  style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                />
+              </div>
+              <h1 style={{ 
+                fontSize: '22px', 
+                fontWeight: 'bold', 
+                color: '#243e3e',
+                margin: '0',
+                whiteSpace: 'nowrap'
+              }}>
+                Artefacto Admin Panel
+              </h1>
+            </div>
+            
+            {/* Center: Welcome Text */}
+            <div style={{ 
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ 
+                fontSize: '18px', 
+                fontWeight: '700', 
+                color: '#243e3e',
+                lineHeight: '1.3',
+                margin: 0
+              }}>
+                Selamat datang, admin!
+              </h2>
+              <p style={{ 
+                fontSize: '15px', 
+                color: '#6c6c6c',
+                lineHeight: '1.2',
+                margin: '4px 0 0 0'
+              }}>
+                Tambah tiket baru ke sistem
+              </p>
+            </div>
+            
+            {/* Right: Logout Button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
+              <button
+                onClick={handleLogout}
+                className="btn btn-secondary flex items-center space-x-2"
+              >
+                <LogOut size={18} />
+                <span className="font-bold">Logout</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {/* Basic Information */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <FileText size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Informasi Dasar</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Deskripsi Tiket *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  rows={3}
-                  className={`input-field resize-none ${fieldErrors.description ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Jelaskan jenis tiket dan fasilitas yang didapat..."
-                  required
-                />
-                {fieldErrors.description && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.description}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">
-                  Minimal 10 karakter, maksimal 500 karakter ({formData.description.length}/500)
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Price Information */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <DollarSign size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Informasi Harga</h2>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">
-                Harga Tiket *
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field pl-10 ${fieldErrors.price ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="50000"
-                  min="0"
-                  step="1000"
-                  required
-                />
-              </div>
-              {fieldErrors.price && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.price}</p>
-              )}
-              {formData.price && !fieldErrors.price && (
-                <p className="text-green-600 text-xs mt-1">
-                  Preview: {formatPrice(parseFloat(formData.price) || 0)}
-                </p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">
-                Masukkan harga dalam Rupiah (maksimal Rp 10.000.000)
-              </p>
-            </div>
-          </div>
-
-          {/* Temple Selection */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <MapPin size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Lokasi Candi</h2>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">
-                Pilih Candi *
-              </label>
-              <select
-                name="templeID"
-                value={formData.templeID}
-                onChange={handleInputChange}
-                onBlur={handleInputBlur}
-                className={`input-field ${fieldErrors.templeID ? 'border-red-500 focus:border-red-500' : ''}`}
-                required
-              >
-                <option value="">Pilih candi...</option>
-                {temples.map((temple) => (
-                  <option key={temple.templeID} value={temple.templeID}>
-                    {temple.title}
-                  </option>
-                ))}
-              </select>
-              {fieldErrors.templeID && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.templeID}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">
-                Pilih candi untuk tiket ini
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-4">
+      {/* Breadcrumb Navigation */}
+      <div className="bg-white border-t border-gray-100">
+        <div style={{ padding: '12px 20px' }}>
+          <div className="flex items-center space-x-3">
             <button
-              type="button"
               onClick={handleCancel}
-              className="btn btn-outline flex-1"
+              className="btn btn-secondary flex items-center space-x-2"
             >
-              Batal
+              <ArrowLeft size={18} />
             </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary flex-1"
-            >
-              {isLoading ? 'Menyimpan...' : 'Simpan Tiket'}
-            </button>
+            <div style={{ marginLeft: '10px' }}>
+              <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Tambah Tiket Baru</h2>
+              <p className="text-gray text-sm" style={{ marginBottom: '0px', marginLeft: '10px' }}>Buat tiket masuk untuk candi yang dipilih</p>
+            </div>
           </div>
-        </form>
+        </div>
+      </div>
+
+      <div style={{ padding: '24px 20px', marginLeft: '100px', marginRight: '100px', marginTop: '80px' }}>
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                    <span className="text-red-600 text-xs">!</span>
+                  </div>
+                  <div>{error}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-2 gap-6">
+              
+              {/* Left Column - Basic Information */}
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f5f1ec', borderColor: '#c2a57e' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <FileText size={20} className="text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Informasi Tiket</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Detail tiket masuk candi</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-5" style={{ marginTop: '20px' }}>
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Candi Tujuan *
+                      </label>
+                      {templesLoading ? (
+                        <div className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg">
+                          Memuat data candi...
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <div
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full px-4 py-3 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors cursor-pointer flex items-center justify-between"
+                          >
+                            <span className="text-gray-700">
+                              {formData.templeID ? temples.find(t => t.templeID === parseInt(formData.templeID))?.title : 'Pilih candi...'}
+                            </span>
+                            <ChevronDown 
+                              size={18} 
+                              className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                            />
+                          </div>
+                          
+                          {isDropdownOpen && (
+                            <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                              <div
+                                onClick={() => handleTempleSelect('')}
+                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-700"
+                              >
+                                Pilih candi...
+                              </div>
+                              {temples.map((temple) => (
+                                <div
+                                  key={temple.templeID}
+                                  onClick={() => handleTempleSelect(temple.templeID.toString())}
+                                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-700"
+                                >
+                                  {temple.title}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-gray-500 text-xs mt-1">Pilih candi untuk tiket masuk</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Deskripsi Tiket *
+                      </label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
+                        style={{ height: '45px' }}
+                        placeholder="Jelaskan detail tiket masuk..."
+                        required
+                      />
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-gray-500 text-xs">Minimal 10 karakter, maksimal 500 karakter</p>
+                        <span className={`text-xs ${formData.description.length > 450 ? 'text-red-500' : 'text-gray-400'}`}>
+                          {formData.description.length}/500
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Pricing */}
+              <div className="space-y-6">
+                {/* Pricing */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f2f4f5', borderColor: '#868a8f', height: '283px' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <DollarSign size={20} className="text-green-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Harga Tiket</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Tentukan harga tiket masuk</p>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginTop: '20px' }}>
+                    <label className="block text-sm font-semibold text-secondary mb-2">
+                      Harga (Rupiah) *
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium" style={{ marginTop: '8px', marginLeft: '15px' }}>
+                        Rp
+                      </div>
+                      <input
+                        type="number"
+                        name="price"
+                        value={formData.price}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        className="w-full pr-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        style={{ paddingLeft: '40px' }}
+                        placeholder="25000"
+                        min="0"
+                        max="10000000"
+                        required
+                      />
+                    </div>
+                    <p className="text-gray-500 text-xs mt-1">Harga dalam Rupiah (maksimal Rp 10.000.000)</p>
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="mt-6">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="btn btn-primary flex items-center justify-center space-x-2 w-full"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="font-bold">Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-bold">Simpan Tiket</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

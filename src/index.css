@@ -749,7 +749,7 @@ p {
 
 .flex-gap-3 {
   gap: var(--spacing-3);
-}
+  }
 
 .flex-gap-4 {
   gap: var(--spacing-4);
@@ -769,7 +769,7 @@ p {
   display: flex;
   gap: var(--spacing-3);
   flex-wrap: wrap;
-}
+  }
 
 .btn-group .btn {
   flex: 1;
@@ -808,7 +808,7 @@ p {
 
 .list-spacing-sm > * + * {
   margin-top: var(--spacing-2);
-}
+  }
 
 .list-spacing-lg > * + * {
   margin-top: var(--spacing-6);

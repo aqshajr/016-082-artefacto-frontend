@@ -118,34 +118,35 @@ const AdminTransactionsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Header with Logo, Title, Welcome Text, and Logout */}
+    <div className="min-h-screen bg-secondary-light pb-20">
+      {/* Single Header */}
       <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ padding: '16px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', width: '100%' }}>
             {/* Left: Logo and Title */}
-            <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '20px' }}>
               <div style={{ 
-                width: '80px', 
-                height: '80px', 
+                width: '70px', 
+                height: '70px', 
                 backgroundColor: '#d4a464', 
                 borderRadius: '12px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                marginRight: '24px'
+                marginRight: '32px',
+                marginLeft: '16px'
               }}>
                 <img 
                   src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                   alt="Artefacto Logo"
-                  style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                  style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                 />
               </div>
               <h1 style={{ 
-                fontSize: '24px', 
+                fontSize: '22px', 
                 fontWeight: 'bold', 
                 color: '#243e3e',
-                margin: '0 0 0 15px',
+                margin: '0',
                 whiteSpace: 'nowrap'
               }}>
                 Artefacto Admin Panel
@@ -154,69 +155,70 @@ const AdminTransactionsPage = () => {
             
             {/* Center: Welcome Text */}
             <div style={{ 
-              textAlign: 'left',
-              flex: '1 1 auto',
-              paddingLeft: '40px',
-              paddingRight: '40px'
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}>
               <h2 style={{ 
                 fontSize: '18px', 
                 fontWeight: '700', 
                 color: '#243e3e',
-                lineHeight: '2',
+                lineHeight: '1.3',
                 margin: 0
               }}>
                 Selamat datang, admin!
               </h2>
               <p style={{ 
-                fontSize: '16px', 
+                fontSize: '15px', 
                 color: '#6c6c6c',
                 lineHeight: '1.2',
-                margin: '2px 0 0 0'
+                margin: '4px 0 0 0'
               }}>
                 Kelola data transaksi dan pendapatan
               </p>
             </div>
             
             {/* Right: Logout Button */}
-            <div style={{ flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
               <button
                 onClick={handleLogout}
                 className="btn btn-secondary flex items-center space-x-2"
               >
                 <LogOut size={18} />
-                <span>Logout</span>
+                <span className="font-bold">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-6">
-        {/* Stats */}
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="bg-white rounded-xl px-6 py-4 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="text-3xl font-bold text-primary">{transactions.length}</div>
-              <div className="text-sm text-gray">Total Transaksi</div>
+      {/* Stats */}
+      <div className="py-6" style={{ paddingLeft: '20px', paddingRight: '20px', marginLeft: '120px', marginRight: '120px' }}>
+        <div className="flex items-center justify-between mb-6">
+          {/* Left: Stats Cards */}
+          <div className="flex items-center space-x-4">
+            <div className="bg-white rounded-xl px-6 shadow-sm flex items-center" style={{ height: '44px' }}>
+              <div className="flex items-center space-x-3">
+                <div className="text-3xl font-bold text-primary">{transactions.length}</div>
+                <div className="text-sm text-gray font-bold">Total Transaksi</div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl px-6 shadow-sm flex items-center" style={{ height: '44px' }}>
+              <div className="flex items-center space-x-3">
+                <div className="text-3xl font-bold text-primary">{formatPrice(totalRevenue)}</div>
+                <div className="text-sm text-gray font-bold">Total Pendapatan</div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl px-6 shadow-sm flex items-center" style={{ height: '44px' }}>
+              <div className="flex items-center space-x-3">
+                <div className="text-3xl font-bold text-primary">{formatPrice(thisMonthRevenue)}</div>
+                <div className="text-sm text-gray font-bold">Pendapatan Bulan Ini</div>
+              </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl px-6 py-4 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="text-3xl font-bold text-green-600">{formatPrice(totalRevenue)}</div>
-              <div className="text-sm text-gray">Total Pendapatan</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl px-6 py-4 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="text-3xl font-bold text-blue-600">{formatPrice(thisMonthRevenue)}</div>
-              <div className="text-sm text-gray">Pendapatan Bulan Ini</div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Filters */}
-        <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
+
+          {/* Right: Date Filters */}
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <Calendar size={18} className="text-gray" />
@@ -226,6 +228,7 @@ const AdminTransactionsPage = () => {
                 onChange={(e) => setStartDate(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Tanggal Mulai"
+                style={{ height: '44px' }}
               />
               <span className="text-gray">-</span>
               <input
@@ -235,6 +238,7 @@ const AdminTransactionsPage = () => {
                 onChange={(e) => setEndDate(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Tanggal Akhir"
+                style={{ height: '44px' }}
               />
             </div>
             
@@ -245,66 +249,82 @@ const AdminTransactionsPage = () => {
                   setEndDate('');
                 }}
                 className="px-3 py-2 text-sm text-gray hover:text-secondary transition-colors"
+                style={{ height: '44px' }}
               >
                 Reset Filter
               </button>
             )}
           </div>
-          
-          {(startDate || endDate) && (
-            <div className="text-sm text-gray mt-2">
-              Menampilkan {filteredTransactions.length} dari {transactions.length} transaksi
-            </div>
-          )}
         </div>
+        
+        {(startDate || endDate) && (
+          <div className="text-sm text-gray mb-6">
+            Menampilkan {filteredTransactions.length} dari {transactions.length} transaksi
+          </div>
+        )}
 
         {/* Transactions List */}
         {filteredTransactions.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-6">
             {filteredTransactions.map((transaction) => (
-              <div key={transaction.transactionID} className="bg-white rounded-xl p-4 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        <CreditCard size={20} className="text-primary" />
+              <div 
+                key={transaction.transactionID} 
+                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100"
+                style={{ minHeight: '255px' }}
+              >
+                {/* Transaction Header */}
+                <div className="bg-gradient-to-r from-primary to-primary/80 px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CreditCard size={18} className="text-white" />
+                      <h3 className="font-semibold text-white text-lg">
+                        Transaksi #{transaction.transactionID}
+                      </h3>
+                    </div>
+                    <div className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      transaction.status === 'success' ? 'bg-green-100 text-green-700' :
+                      transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {transaction.status === 'success' ? 'Berhasil' : 
+                       transaction.status === 'pending' ? 'Pending' : 'Gagal'}
+                    </div>
+                  </div>
+                  <div className="text-sm text-white/90 mt-1">
+                    {formatDate(transaction.transactionDate)}
+                  </div>
+                </div>
+
+                {/* Transaction Content */}
+                <div className="p-4">
+                  <div className="space-y-2 text-sm">
+                    {/* Pembeli */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 font-medium">Pembeli:</span>
+                      <div className="font-semibold text-secondary text-right">
+                        {transaction.User ? transaction.User.username : `User ID: ${transaction.userID}`}
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-secondary">
-                          Transaksi #{transaction.transactionID}
-                        </h3>
-                        <div className="text-sm text-gray">
-                          {formatDate(transaction.transactionDate)}
+                    </div>
+                    
+                    {/* Tiket Info */}
+                    <div className="flex items-start justify-between">
+                      <span className="text-gray-500 font-medium">Tiket:</span>
+                      <div className="text-right flex-1 ml-2">
+                        <div className="font-semibold text-secondary">
+                          {transaction.Ticket?.Temple?.title || 'Candi'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {transaction.ticketQuantity} tiket • {transaction.Ticket?.description || 'No description'}
                         </div>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray">Pembeli:</span>
-                        <div className="font-medium">
-                          {transaction.User ? transaction.User.username : `User ID: ${transaction.userID}`}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <span className="text-gray">Tiket:</span>
-                        <div className="font-medium">
-                          {transaction.Ticket?.Temple?.title || 'Candi'} - {transaction.ticketQuantity} tiket
-                        </div>
-                        <div className="text-xs text-gray">
-                          {transaction.Ticket?.description || 'No description'}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <span className="text-gray">Total:</span>
-                        <div className="font-bold text-green-600 text-lg">
+                    {/* Total Price */}
+                    <div className="pt-2 mt-2 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 font-medium">Total Pembayaran:</span>
+                        <div className="font-bold text-green-600 text-xl">
                           {formatPrice(parseFloat(transaction.totalPrice) || 0)}
-                        </div>
-                        <div className="text-xs text-gray">
-                          Status: {transaction.status === 'success' ? 'Berhasil' : 
-                           transaction.status === 'pending' ? 'Pending' : 'Gagal'}
                         </div>
                       </div>
                     </div>
@@ -332,8 +352,8 @@ const AdminTransactionsPage = () => {
       </div>
 
       {/* Admin Bottom Navigation - Clean Design */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50" style={{ width: '100vw' }}>
-        <div className="flex h-20" style={{ width: '100%' }}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50" style={{ width: '100vw', height: '70px' }}>
+        <div className="flex h-full" style={{ width: '100%' }}>
           <div
             onClick={() => navigate('/admin/temples')}
             className={`flex-1 flex flex-col items-center justify-center space-y-1 transition-colors cursor-pointer ${

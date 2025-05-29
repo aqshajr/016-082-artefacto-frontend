@@ -324,33 +324,34 @@ const CreateArtifactPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Header with Logo, Title, Welcome Text, and Logout */}
+      {/* Single Header */}
       <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ padding: '16px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', width: '100%' }}>
             {/* Left: Logo and Title */}
-            <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '20px' }}>
               <div style={{ 
-                width: '80px', 
-                height: '80px', 
+                width: '70px', 
+                height: '70px', 
                 backgroundColor: '#d4a464', 
                 borderRadius: '12px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                marginRight: '24px'
+                marginRight: '32px',
+                marginLeft: '16px'
               }}>
                 <img 
                   src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                   alt="Artefacto Logo"
-                  style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                  style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                 />
               </div>
               <h1 style={{ 
-                fontSize: '24px', 
+                fontSize: '22px', 
                 fontWeight: 'bold', 
                 color: '#243e3e',
-                margin: '0 0 0 15px',
+                margin: '0',
                 whiteSpace: 'nowrap'
               }}>
                 Artefacto Admin Panel
@@ -359,38 +360,38 @@ const CreateArtifactPage = () => {
             
             {/* Center: Welcome Text */}
             <div style={{ 
-              textAlign: 'left',
-              flex: '1 1 auto',
-              paddingLeft: '40px',
-              paddingRight: '40px'
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}>
               <h2 style={{ 
                 fontSize: '18px', 
                 fontWeight: '700', 
                 color: '#243e3e',
-                lineHeight: '2',
+                lineHeight: '1.3',
                 margin: 0
               }}>
                 Selamat datang, admin!
               </h2>
               <p style={{ 
-                fontSize: '16px', 
+                fontSize: '15px', 
                 color: '#6c6c6c',
                 lineHeight: '1.2',
-                margin: '2px 0 0 0'
+                margin: '4px 0 0 0'
               }}>
                 Tambah artefak baru ke sistem
               </p>
             </div>
             
             {/* Right: Logout Button */}
-            <div style={{ flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
               <button
                 onClick={handleLogout}
                 className="btn btn-secondary flex items-center space-x-2"
               >
                 <LogOut size={18} />
-                <span>Logout</span>
+                <span className="font-bold">Logout</span>
               </button>
             </div>
           </div>
@@ -399,363 +400,400 @@ const CreateArtifactPage = () => {
 
       {/* Breadcrumb Navigation */}
       <div className="bg-white border-t border-gray-100">
-        <div className="container py-3">
+        <div style={{ padding: '12px 20px' }}>
           <div className="flex items-center space-x-3">
             <button
               onClick={handleCancel}
-              className="p-2 text-gray hover:text-secondary transition-colors"
+              className="btn btn-secondary flex items-center space-x-2"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </button>
-            <div>
-              <h2 className="text-lg font-semibold text-secondary">Tambah Artefak Baru</h2>
-              <p className="text-gray text-sm">Lengkapi informasi artefak yang akan ditambahkan</p>
+            <div style={{ marginLeft: '10px' }}>
+              <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Tambah Artefak Baru</h2>
+              <p className="text-gray text-sm" style={{ marginBottom: '0px', marginLeft: '10px' }}>Lengkapi informasi artefak yang akan ditambahkan</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {/* Basic Information */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <FileText size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Informasi Dasar</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Nama Artefak *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field ${fieldErrors.title ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Contoh: Arca Ganesha"
-                  required
-                />
-                {fieldErrors.title && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.title}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">Minimal 3 karakter, maksimal 100 karakter</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Deskripsi Artefak *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  rows={4}
-                  className={`input-field resize-none ${fieldErrors.description ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Jelaskan sejarah, makna, dan keunikan artefak..."
-                  required
-                />
-                {fieldErrors.description && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.description}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">
-                  Minimal 10 karakter, maksimal 1000 karakter ({formData.description.length}/1000)
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Temple Selection */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <MapPin size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Candi Terkait</h2>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">
-                Pilih Candi *
-              </label>
-              <select
-                name="templeID"
-                value={formData.templeID}
-                onChange={handleInputChange}
-                onBlur={handleInputBlur}
-                className={`input-field ${fieldErrors.templeID ? 'border-red-500 focus:border-red-500' : ''}`}
-                required
-              >
-                <option value="">Pilih candi...</option>
-                {temples.map((temple) => (
-                  <option key={temple.templeID} value={temple.templeID}>
-                    {temple.title}
-                  </option>
-                ))}
-              </select>
-              {fieldErrors.templeID && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.templeID}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">
-                Pilih candi tempat artefak ini ditemukan atau berasal
-              </p>
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Upload size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Gambar Artefak</h2>
-            </div>
-            
-            {previewImage ? (
-              <div className="space-y-4">
-                <div className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
-                  <img 
-                    src={previewImage} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
-                  />
+      <div style={{ padding: '24px 20px', marginLeft: '80px', marginRight: '80px' }}>
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                    <span className="text-red-600 text-xs">!</span>
+                  </div>
+                  <div>{error}</div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedImage(null);
-                      setPreviewImage(null);
-                      setFieldErrors(prev => ({ ...prev, image: undefined }));
-                    }}
-                    className="text-red-500 text-sm hover:text-red-600 transition-colors"
-                  >
-                    Hapus Gambar
-                  </button>
-                  <label className="text-primary text-sm hover:text-primary-yellow transition-colors cursor-pointer">
-                    Ganti Gambar
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <label className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg hover:border-primary transition-colors cursor-pointer ${fieldErrors.image ? 'border-red-500' : 'border-primary/30'}`}>
-                  <Upload size={32} className="text-primary mb-2" />
-                  <span className="text-sm font-medium text-secondary">Upload Gambar Artefak</span>
-                  <span className="text-xs text-gray">JPG, PNG, maksimal 5MB</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                </label>
-                {fieldErrors.image && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.image}</p>
-                )}
               </div>
             )}
-          </div>
 
-          {/* Artifact Details */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Package size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Detail Artefak</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Periode *
-                </label>
-                <input
-                  type="text"
-                  name="detailPeriod"
-                  value={formData.detailPeriod}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field ${fieldErrors.detailPeriod ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Contoh: Abad ke-8 Masehi"
-                  required
-                />
-                {fieldErrors.detailPeriod && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.detailPeriod}</p>
-                )}
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-2 gap-6">
+              
+              {/* Left Column - Basic Information + Image Upload */}
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f5f1ec', borderColor: '#c2a57e' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <FileText size={20} className="text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Informasi Dasar</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Detail utama tentang artefak</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-5" style={{ marginTop: '20px' }}>
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Nama Artefak *
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        placeholder="Contoh: Arca Ganesha"
+                        required
+                      />
+                      <p className="text-gray-500 text-xs mt-1">Minimal 3 karakter, maksimal 100 karakter</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Deskripsi Artefak *
+                      </label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
+                        style={{ height: '120px' }}
+                        placeholder="Jelaskan sejarah, makna, dan keunikan artefak..."
+                        required
+                      />
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-gray-500 text-xs">Minimal 10 karakter, maksimal 1000 karakter</p>
+                        <span className={`text-xs ${formData.description.length > 900 ? 'text-red-500' : 'text-gray-400'}`}>
+                          {formData.description.length}/1000
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Candi Asal *
+                      </label>
+                      {templesLoading ? (
+                        <div className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg">
+                          Memuat data candi...
+                        </div>
+                      ) : (
+                        <select
+                          name="templeID"
+                          value={formData.templeID}
+                          onChange={handleInputChange}
+                          onBlur={handleInputBlur}
+                          className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          required
+                        >
+                          <option value="">Pilih candi...</option>
+                          {temples.map(temple => (
+                            <option key={temple.templeID} value={temple.templeID}>
+                              {temple.title}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <p className="text-gray-500 text-xs mt-1">Pilih candi tempat artefak ditemukan</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Image Upload */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f2f4f5', borderColor: '#868a8f', height: '365px' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Upload size={20} className="text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Gambar Artefak</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Upload foto terbaik artefak</p>
+                    </div>
+                    
+                    {/* Action buttons - only show when image is uploaded */}
+                    {previewImage && (
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span>Gambar berhasil diupload</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setPreviewImage(null);
+                            setFieldErrors(prev => ({ ...prev, image: undefined }));
+                          }}
+                          className="px-3 py-1 bg-red-50 text-red-600 rounded-none hover:bg-red-100 transition-colors text-xs font-medium border border-red-200"
+                        >
+                          Hapus
+                        </button>
+                        <label className="px-3 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors cursor-pointer text-xs font-medium border border-primary/20">
+                          Ganti
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageSelect}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div style={{ marginTop: '20px' }}>
+                    {/* Fixed height container for consistent size */}
+                    <div className="space-y-4 flex flex-col items-center">
+                      <div className="relative bg-gray-100 rounded-xl overflow-hidden shadow-inner w-full" style={{ maxWidth: '445px', height: '257px', flexShrink: 0 }}>
+                        {previewImage ? (
+                          <>
+                            <img 
+                              src={previewImage} 
+                              alt="Preview" 
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                          </>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center h-full hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                              <Upload size={24} className="text-primary" />
+                            </div>
+                            <span className="text-sm font-semibold text-secondary mb-1">Upload Gambar Artefak</span>
+                            <span className="text-xs text-gray-500">JPG, PNG, maksimal 5MB</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageSelect}
+                              className="hidden"
+                              required
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Material *
-                </label>
-                <input
-                  type="text"
-                  name="detailMaterial"
-                  value={formData.detailMaterial}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field ${fieldErrors.detailMaterial ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Contoh: Batu Andesit"
-                  required
-                />
-                {fieldErrors.detailMaterial && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.detailMaterial}</p>
-                )}
-              </div>
+              {/* Right Column - Fun Fact + Location + Detail Artefak */}
+              <div className="space-y-6">
+                {/* Fun Fact Section */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f0f8fc', borderColor: '#4c9ebe' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <Lightbulb size={20} className="text-yellow-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Fun Fact</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Fakta menarik tentang artefak</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-5" style={{ marginTop: '20px' }}>
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Judul Fun Fact *
+                      </label>
+                      <input
+                        type="text"
+                        name="funfactTitle"
+                        value={formData.funfactTitle}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        placeholder="Contoh: Simbolisme Tersembunyi"
+                        required
+                      />
+                      <p className="text-gray-500 text-xs mt-1">Minimal 3 karakter, maksimal 100 karakter</p>
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Ukuran *
-                </label>
-                <input
-                  type="text"
-                  name="detailSize"
-                  value={formData.detailSize}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field ${fieldErrors.detailSize ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Contoh: 150 cm x 80 cm x 60 cm"
-                  required
-                />
-                {fieldErrors.detailSize && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.detailSize}</p>
-                )}
-              </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary mb-2">
+                        Deskripsi Fun Fact *
+                      </label>
+                      <textarea
+                        name="funfactDescription"
+                        value={formData.funfactDescription}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
+                        style={{ height: '95px' }}
+                        placeholder="Ceritakan fakta menarik tentang artefak ini..."
+                        required
+                      />
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-gray-500 text-xs">Minimal 10 karakter, maksimal 500 karakter</p>
+                        <span className={`text-xs ${formData.funfactDescription.length > 450 ? 'text-red-500' : 'text-gray-400'}`}>
+                          {formData.funfactDescription.length}/500
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Gaya Seni *
-                </label>
-                <input
-                  type="text"
-                  name="detailStyle"
-                  value={formData.detailStyle}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field ${fieldErrors.detailStyle ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Contoh: Gaya Jawa Tengah"
-                  required
-                />
-                {fieldErrors.detailStyle && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.detailStyle}</p>
-                )}
+                {/* Location */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f7f5f0', borderColor: '#8f754e', height: '215px' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <MapPin size={20} className="text-green-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Lokasi</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Link museum atau tempat penyimpanan</p>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginTop: '20px' }}>
+                    <label className="block text-sm font-semibold text-secondary mb-2">
+                      URL Lokasi *
+                    </label>
+                    <input
+                      type="url"
+                      name="locationUrl"
+                      value={formData.locationUrl}
+                      onChange={handleInputChange}
+                      onBlur={handleInputBlur}
+                      className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      placeholder="https://maps.app.goo.gl/..."
+                      required
+                    />
+                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-start space-x-2">
+                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-white text-xs">💡</span>
+                        </div>
+                        <div className="text-sm text-blue-700">
+                          <strong>Tips:</strong> Masukkan link ke museum atau tempat penyimpanan artefak.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detail Artefak */}
+                <div className="rounded-xl p-6 shadow-sm border" style={{ backgroundColor: '#f8f9f8', borderColor: '#b2b5aa' }}>
+                  <div className="flex items-center space-x-3" style={{ marginLeft: '10px', marginBottom: '0px' }}>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Package size={20} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', marginLeft: '10px' }}>Detail Artefak</h2>
+                      <p className="text-sm text-gray-500" style={{ marginBottom: '0px', marginLeft: '10px' }}>Informasi teknis dan fisik</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-5" style={{ marginTop: '20px' }}>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-secondary mb-2">
+                          Periode *
+                        </label>
+                        <input
+                          type="text"
+                          name="detailPeriod"
+                          value={formData.detailPeriod}
+                          onChange={handleInputChange}
+                          onBlur={handleInputBlur}
+                          className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          placeholder="Contoh: Abad ke-8"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-secondary mb-2">
+                          Material *
+                        </label>
+                        <input
+                          type="text"
+                          name="detailMaterial"
+                          value={formData.detailMaterial}
+                          onChange={handleInputChange}
+                          onBlur={handleInputBlur}
+                          className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          placeholder="Contoh: Batu Andesit"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-secondary mb-2">
+                          Ukuran *
+                        </label>
+                        <input
+                          type="text"
+                          name="detailSize"
+                          value={formData.detailSize}
+                          onChange={handleInputChange}
+                          onBlur={handleInputBlur}
+                          className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          placeholder="Contoh: 50x30x25 cm"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-secondary mb-2">
+                          Gaya *
+                        </label>
+                        <input
+                          type="text"
+                          name="detailStyle"
+                          value={formData.detailStyle}
+                          onChange={handleInputChange}
+                          onBlur={handleInputBlur}
+                          className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                          placeholder="Contoh: Jawa Tengah Klasik"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Fun Fact Section */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Lightbulb size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Fun Fact</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Judul Fun Fact *
-                </label>
-                <input
-                  type="text"
-                  name="funfactTitle"
-                  value={formData.funfactTitle}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  className={`input-field ${fieldErrors.funfactTitle ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Contoh: Rahasia Teknik Pembuatan"
-                  required
-                />
-                {fieldErrors.funfactTitle && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.funfactTitle}</p>
+            {/* Save Button centered below both columns */}
+            <div className="mt-6 flex justify-center">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="btn btn-primary flex items-center justify-center space-x-2"
+                style={{ minWidth: '200px' }}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-bold">Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold">Simpan Artefak</span>
+                  </>
                 )}
-                <p className="text-gray-500 text-xs mt-1">Minimal 3 karakter, maksimal 100 karakter</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">
-                  Deskripsi Fun Fact *
-                </label>
-                <textarea
-                  name="funfactDescription"
-                  value={formData.funfactDescription}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  rows={3}
-                  className={`input-field resize-none ${fieldErrors.funfactDescription ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Ceritakan fakta menarik tentang artefak ini..."
-                  required
-                />
-                {fieldErrors.funfactDescription && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.funfactDescription}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">
-                  Minimal 10 karakter, maksimal 500 karakter ({formData.funfactDescription.length}/500)
-                </p>
-              </div>
+              </button>
             </div>
-          </div>
-
-          {/* Location */}
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <MapPin size={20} className="text-primary" />
-              <h2 className="text-lg font-semibold text-secondary">Lokasi Penemuan</h2>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">
-                URL Google Maps *
-              </label>
-              <input
-                type="url"
-                name="locationUrl"
-                value={formData.locationUrl}
-                onChange={handleInputChange}
-                onBlur={handleInputBlur}
-                className={`input-field ${fieldErrors.locationUrl ? 'border-red-500 focus:border-red-500' : ''}`}
-                placeholder="https://maps.app.goo.gl/..."
-                required
-              />
-              {fieldErrors.locationUrl && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.locationUrl}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">
-                Salin link dari Google Maps untuk lokasi penemuan artefak
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="btn btn-outline flex-1"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary flex-1"
-            >
-              {isLoading ? 'Menyimpan...' : 'Simpan Artefak'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

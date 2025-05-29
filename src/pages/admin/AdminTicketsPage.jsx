@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Ticket, Plus, Edit, Trash2, DollarSign, Search, LogOut, MapPin, Camera, Settings } from 'lucide-react';
+import { Ticket, Plus, Edit, Trash2, DollarSign, Search, LogOut, MapPin, Camera, Settings, ChevronDown } from 'lucide-react';
 import { ticketAPI, templeAPI } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
@@ -14,6 +14,7 @@ const AdminTicketsPage = () => {
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [selectedTemple, setSelectedTemple] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,6 +22,20 @@ const AdminTicketsPage = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('.relative')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const fetchData = async () => {
     try {
@@ -118,34 +133,35 @@ const AdminTicketsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Header with Logo, Title, Welcome Text, and Logout */}
+    <div className="min-h-screen bg-secondary-light pb-20">
+      {/* Single Header */}
       <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ padding: '16px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', width: '100%' }}>
             {/* Left: Logo and Title */}
-            <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '20px' }}>
               <div style={{ 
-                width: '80px', 
-                height: '80px', 
+                width: '70px', 
+                height: '70px', 
                 backgroundColor: '#d4a464', 
                 borderRadius: '12px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                marginRight: '24px'
+                marginRight: '32px',
+                marginLeft: '16px'
               }}>
                 <img 
                   src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                   alt="Artefacto Logo"
-                  style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                  style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                 />
               </div>
               <h1 style={{ 
-                fontSize: '24px', 
+                fontSize: '22px', 
                 fontWeight: 'bold', 
                 color: '#243e3e',
-                margin: '0 0 0 15px',
+                margin: '0',
                 whiteSpace: 'nowrap'
               }}>
                 Artefacto Admin Panel
@@ -154,76 +170,107 @@ const AdminTicketsPage = () => {
             
             {/* Center: Welcome Text */}
             <div style={{ 
-              textAlign: 'left',
-              flex: '1 1 auto',
-              paddingLeft: '40px',
-              paddingRight: '40px'
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}>
               <h2 style={{ 
                 fontSize: '18px', 
                 fontWeight: '700', 
                 color: '#243e3e',
-                lineHeight: '2',
+                lineHeight: '1.3',
                 margin: 0
               }}>
                 Selamat datang, admin!
               </h2>
               <p style={{ 
-                fontSize: '16px', 
+                fontSize: '15px', 
                 color: '#6c6c6c',
                 lineHeight: '1.2',
-                margin: '2px 0 0 0'
+                margin: '4px 0 0 0'
               }}>
                 Kelola data tiket dan harga
               </p>
             </div>
             
             {/* Right: Logout Button */}
-            <div style={{ flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
               <button
                 onClick={handleLogout}
                 className="btn btn-secondary flex items-center space-x-2"
               >
                 <LogOut size={18} />
-                <span>Logout</span>
+                <span className="font-bold">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-6">
-        {/* Stats and Controls */}
+      {/* Stats and Controls */}
+      <div className="py-6" style={{ paddingLeft: '120px', paddingRight: '120px' }}>
         <div className="flex items-center justify-between mb-6">
-          <div className="bg-white rounded-xl px-6 py-4 shadow-sm">
+          <div className="bg-white rounded-xl px-6 shadow-sm flex items-center" style={{ height: '44px' }}>
             <div className="flex items-center space-x-3">
               <div className="text-3xl font-bold text-primary">{tickets.length}</div>
-              <div className="text-sm text-gray">Total Jenis Tiket</div>
+              <div className="text-sm text-gray font-bold">Total Tiket</div>
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
-            <select
-              value={selectedTemple}
-              onChange={(e) => setSelectedTemple(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="">Semua Candi</option>
-              {temples.map((temple) => (
-                <option key={temple.templeID} value={temple.templeID}>
-                  {temple.title}
-                </option>
-              ))}
-            </select>
+            {/* Custom Temple Dropdown */}
+            <div className="relative">
+              <div
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer bg-white flex items-center justify-between"
+                style={{ height: '44px', width: '186px' }}
+              >
+                <span className="text-gray-700" style={{ paddingLeft: '10px' }}>
+                  {selectedTemple ? temples.find(t => t.templeID === parseInt(selectedTemple))?.title : 'Semua Candi'}
+                </span>
+                <ChevronDown 
+                  size={18} 
+                  className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </div>
+              
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  <div
+                    onClick={() => {
+                      setSelectedTemple('');
+                      setIsDropdownOpen(false);
+                    }}
+                    className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
+                  >
+                    Semua Candi
+                  </div>
+                  {temples.map((temple) => (
+                    <div
+                      key={temple.templeID}
+                      onClick={() => {
+                        setSelectedTemple(temple.templeID.toString());
+                        setIsDropdownOpen(false);
+                      }}
+                      className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
+                    >
+                      {temple.title}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             
             <div className="relative">
-              <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray" />
+              <Search size={18} className="absolute top-1/2 transform -translate-y-1/2 text-gray" style={{ left: '15px', marginTop: '12px' }} />
               <input
                 type="text"
                 placeholder="Cari tiket..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-64"
+                className="pl-10 pr-6 py-3 border-0 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"
+                style={{ width: '70vw', maxWidth: '342px', paddingLeft: '40px' }}
               />
             </div>
             
@@ -232,7 +279,7 @@ const AdminTicketsPage = () => {
               className="btn btn-primary flex items-center space-x-2 py-3"
             >
               <Plus size={18} />
-              <span>Tambah Tiket</span>
+              <span className="font-bold">Tambah Tiket</span>
             </button>
           </div>
         </div>
@@ -245,57 +292,152 @@ const AdminTicketsPage = () => {
 
         {/* Tickets List */}
         {filteredTickets.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             {filteredTickets.map((ticket) => (
               <div 
                 key={ticket.ticketID} 
-                className="bg-white rounded-xl overflow-hidden shadow-sm"
+                className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
+                style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                  borderRadius: '16px 16px 4px 4px',
+                  border: '2px dashed #d4a464',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  height: '260px'
+                }}
               >
-                <div className="relative h-48">
-                  <img 
-                    src={ticket.imageUrl || 'https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=400&h=300&fit=crop&crop=center'}
-                    alt={ticket.description}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=400&h=300&fit=crop&crop=center';
-                    }}
-                  />
+                {/* Ticket Header Strip */}
+                <div 
+                  style={{
+                    background: 'linear-gradient(90deg, #d4a464 0%, #b8956b 100%)',
+                    padding: '12px 20px',
+                    borderRadius: '14px 14px 0 0',
+                    borderBottom: '2px dashed #d4a464',
+                    marginBottom: '2px'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-white font-bold text-lg">
+                      🎫 TIKET MASUK
+                    </div>
+                    <div className="text-white text-sm opacity-90">
+                      #{ticket.ticketID}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Perforated Line Effect */}
+                <div 
+                  style={{
+                    height: '2px',
+                    background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px)',
+                    margin: '0 -2px'
+                  }}
+                />
                 
-                <div className="p-4">
-                  <h3 className="font-semibold text-secondary text-lg mb-1">
-                    Tiket {getTempleName(ticket.templeID)}
-                  </h3>
-                  <div className="text-xl font-bold text-green-600 mb-2">
-                    {formatPrice(ticket.price)}
+                {/* Ticket Content */}
+                <div className="p-3" style={{ paddingTop: '12px' }}>
+                  {/* Temple Name - Main Title */}
+                  <div className="text-center mb-2">
+                    <div 
+                      className="text-lg font-bold px-6 py-2 rounded-full inline-block mb-1"
+                      style={{ backgroundColor: '#d4a464', color: 'white' }}
+                    >
+                      {getTempleName(ticket.templeID)}
+                    </div>
                   </div>
-                  <p className="text-sm text-gray line-clamp-2 mb-4">
-                    {ticket.description}
-                  </p>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-end space-x-2">
-                    <button
-                      onClick={() => handleEditTicket(ticket.ticketID)}
-                      className="p-2 text-primary hover:text-primary-yellow hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Edit Tiket"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTicket(ticket.ticketID, ticket.description)}
-                      disabled={deleteLoading === ticket.ticketID}
-                      className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Hapus Tiket"
-                    >
-                      {deleteLoading === ticket.ticketID ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
-                      ) : (
-                        <Trash2 size={16} />
-                      )}
-                    </button>
+
+                  {/* Description */}
+                  <div>
+                    <p className="text-sm text-gray-600 text-center" style={{ 
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '100%',
+                      paddingLeft: '30px',
+                      paddingRight: '30px'
+                    }}>
+                      {ticket.description}
+                    </p>
+                  </div>
+
+                  {/* Price - Big and Prominent */}
+                  <div className="text-center mb-2">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatPrice(ticket.price)}
+                    </div>
+                  </div>
+
+                  {/* Ticket Stub - Bottom Section */}
+                  <div 
+                    className="border-t-2 border-dashed border-gray-300 pt-3 mt-3"
+                    style={{ borderColor: '#d4a464' }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-gray-500">
+                        <div>VALID FOR</div>
+                        <div className="font-semibold text-gray-700">SINGLE ENTRY</div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditTicket(ticket.ticketID);
+                          }}
+                          className="p-2 bg-primary/10 rounded text-primary hover:bg-primary hover:text-white transition-colors border-0"
+                          title="Edit Tiket"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTicket(ticket.ticketID, ticket.description);
+                          }}
+                          disabled={deleteLoading === ticket.ticketID}
+                          className="p-2 bg-red-50 rounded text-red-500 hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 border-0"
+                          title="Hapus Tiket"
+                        >
+                          {deleteLoading === ticket.ticketID ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Decorative Holes on Sides - Made Bigger */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    left: '-10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '50%',
+                    border: '3px solid #d4a464'
+                  }}
+                />
+                <div 
+                  style={{
+                    position: 'absolute',
+                    right: '-10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '50%',
+                    border: '3px solid #d4a464'
+                  }}
+                />
               </div>
             ))}
           </div>
@@ -327,8 +469,8 @@ const AdminTicketsPage = () => {
       </div>
 
       {/* Admin Bottom Navigation - Clean Design */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50" style={{ width: '100vw' }}>
-        <div className="flex h-20" style={{ width: '100%' }}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50" style={{ width: '100vw', height: '70px' }}>
+        <div className="flex h-full" style={{ width: '100%' }}>
           <div
             onClick={() => navigate('/admin/temples')}
             className={`flex-1 flex flex-col items-center justify-center space-y-1 transition-colors cursor-pointer ${
