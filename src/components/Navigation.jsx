@@ -53,24 +53,24 @@ const Navigation = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
         <div className="container py-2">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-5 h-5 bg-primary rounded-md flex items-center justify-center">
-                <img 
-                  src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
-                  alt="Artefacto Logo"
-                  className="w-3 h-3 object-contain"
-                />
-              </div>
-              <div>
-                <h1 className="text-base font-bold text-secondary">ARTEFACTO</h1>
-                <p className="text-xs text-gray leading-none">{isAdmin() ? 'Admin Panel' : 'Culture Explorer'}</p>
+          <div className="relative flex items-center justify-center w-full">
+            <Link to="/" className="flex flex-col items-center justify-center space-y-1">
+              <img 
+                src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
+                alt="Artefacto Logo"
+                className="w-6 h-6 object-contain"
+              />
+              <div className="text-center">
+                <h1 className="text-sm font-bold text-secondary">ARTEFACTO</h1>
+                <p className="text-xs text-gray leading-none">
+                  {isAdmin() ? 'Admin Panel' : 'Culture Explorer'}
+                </p>
               </div>
             </Link>
-            
+
             <button
               onClick={handleLogout}
-              className="p-2 text-gray hover:text-red-500 transition-colors rounded-lg"
+              className="absolute top-0 right-0 p-2 text-gray hover:text-red-500 transition-colors rounded-lg"
               title="Logout"
             >
               <LogOut size={18} />
