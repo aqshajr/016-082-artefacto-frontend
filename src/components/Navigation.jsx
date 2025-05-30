@@ -54,34 +54,26 @@ const Navigation = () => {
       <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
         <div className="container py-2">
           <div className="relative flex items-center justify-center w-full">
-            <Link to="/" className="flex flex-col items-center justify-center space-y-1">
+            <Link to="/" className="flex flex-col items-center justify-center space-y-1 no-underline" style={{ textDecoration: 'none' }}>
               <img 
                 src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                 alt="Artefacto Logo"
-                className="w-6 h-6 object-contain"
+                style={{ width: '120px', height: '120px', objectFit: 'contain', marginTop: '16px', marginBottom: '12px' }}
               />
               <div className="text-center">
-                <h1 className="text-sm font-bold text-secondary">ARTEFACTO</h1>
-                <p className="text-xs text-gray leading-none">
+                <h1 className="font-bold text-secondary" style={{ fontSize: '32px', marginBottom: '5px', marginTop: '10px' }}>ARTEFACTO</h1>
+                <p className="text-gray leading-none" style={{ fontSize: '24px' }}>
                   {isAdmin() ? 'Admin Panel' : 'Culture Explorer'}
                 </p>
               </div>
             </Link>
-
-            <button
-              onClick={handleLogout}
-              className="absolute top-0 right-0 p-2 text-gray hover:text-red-500 transition-colors rounded-lg"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
           </div>
         </div>
       </header>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-inset-bottom">
-        <div className={`grid ${navItems.length === 4 ? 'grid-cols-4' : 'grid-cols-5'} h-14`}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-inset-bottom" style={{ height: '70px' }}>
+        <div className={`grid ${navItems.length === 4 ? 'grid-cols-4' : 'grid-cols-5'} h-full`}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;

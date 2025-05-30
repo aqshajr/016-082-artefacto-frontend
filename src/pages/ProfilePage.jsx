@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { User, Camera, Edit3, Trash2, Eye, EyeOff, Save, X } from 'lucide-react';
+import { User, Camera, Edit3, Trash2, Eye, EyeOff, Save, X, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { authAPI } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
@@ -206,8 +206,23 @@ const ProfilePage = () => {
       {/* Page Header */}
       <div className="bg-white shadow-sm">
         <div className="container py-4">
-          <h1 className="text-xl font-bold text-secondary">Profil</h1>
-          <p className="text-gray text-sm mt-1">Kelola informasi akun Anda</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-secondary">Profil</h1>
+              <p className="text-gray text-sm mt-1">Kelola informasi akun Anda</p>
+            </div>
+            <button
+              onClick={() => {
+                if (window.confirm('Apakah Anda yakin ingin keluar?')) {
+                  logout();
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              <LogOut size={16} />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       </div>
 

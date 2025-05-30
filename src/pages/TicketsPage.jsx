@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, ChevronRight, Calendar, Minus, Plus, X } from 'lucide-react';
+import { Ticket, ChevronRight, MapPin, Clock, Minus, Plus, X, Calendar } from 'lucide-react';
 import { ticketAPI, transactionAPI } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
@@ -9,9 +9,9 @@ const TicketsPage = () => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [formData, setFormData] = useState({
     quantity: 1,
     validDate: ''
@@ -125,7 +125,10 @@ const TicketsPage = () => {
 
   const getMinDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   if (isLoading) {
@@ -137,78 +140,206 @@ const TicketsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Page Header */}
-      <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <h1 className="text-xl font-bold text-secondary">Beli Tiket</h1>
-          <p className="text-gray text-sm mt-1">Pilih tiket untuk menjelajahi candi bersejarah</p>
+    <div className="min-h-screen pb-16" style={{ backgroundColor: '#f8f9fa' }}>
+      <div className="py-6" style={{ paddingLeft: '120px', paddingRight: '120px' }}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl px-6 shadow-sm flex items-center" style={{ height: '44px' }}>
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl font-bold" style={{ color: '#d4a464' }}>{tickets.length}</div>
+              <div className="text-sm font-bold" style={{ color: '#6c757d' }}>Tiket Tersedia</div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="container py-6">
+        {/* Tickets List */}
         {tickets.length > 0 ? (
-          <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-8">
             {tickets.map((ticket) => (
-              <div key={ticket.ticketID} className="bg-white rounded-xl overflow-hidden shadow-sm">
-                {/* Ticket Image */}
-                {ticket.imageUrl && (
-                  <div className="h-48 overflow-hidden">
-                    <img 
-                      src={ticket.imageUrl}
-                      alt={`Tiket ${ticket.Temple?.title || 'Candi'}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=600&h=300&fit=crop&crop=center';
-                      }}
-                    />
-                  </div>
-                )}
-                
-                <div className="p-6">
-                  {/* Ticket Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-secondary mb-2">
-                        Tiket {ticket.Temple?.title || 'Candi'}
-                      </h3>
-                      <p className="text-gray text-sm mb-3">{ticket.description}</p>
+              <div 
+                key={ticket.ticketID} 
+                className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
+                style={{
+                  background: '#ffffff',
+                  borderRadius: '16px 16px 4px 4px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  height: '260px'
+                }}
+                onClick={() => handleOpenPurchaseModal(ticket)}
+              >
+                {/* Border using repeating-linear-gradient */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: `
+                      repeating-linear-gradient(0deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px) 0 0 / 2px 100%,
+                      repeating-linear-gradient(90deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px) 0 0 / 100% 2px,
+                      repeating-linear-gradient(0deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px) 100% 0 / 2px 100%,
+                      repeating-linear-gradient(90deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px) 0 100% / 100% 2px
+                    `,
+                    backgroundRepeat: 'no-repeat',
+                    borderRadius: '16px 16px 4px 4px',
+                    clipPath: 'polygon(0% 0%, 100% 0%, 100% 40%, 85% 40%, 85% 60%, 100% 60%, 100% 100%, 0% 100%, 0% 60%, 15% 60%, 15% 40%, 0% 40%)',
+                    pointerEvents: 'none'
+                  }}
+                />
+
+                {/* Ticket Header Strip */}
+                <div 
+                  style={{
+                    background: 'linear-gradient(90deg, #d4a464 0%, #b8956b 100%)',
+                    padding: '12px 20px',
+                    borderRadius: '14px 14px 0 0',
+                    marginBottom: '2px'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-white font-bold text-lg">
+                      🎫 TIKET MASUK
                     </div>
-                    <div className="text-right ml-4">
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(ticket.price)}
-                      </div>
-                      <div className="text-xs text-gray">per orang</div>
+                  </div>
+                </div>
+
+                {/* Perforated Line Effect */}
+                <div 
+                  style={{
+                    height: '2px',
+                    background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px)',
+                    margin: '0 -2px'
+                  }}
+                />
+                
+                {/* Ticket Content */}
+                <div className="p-3" style={{ paddingTop: '12px' }}>
+                  {/* Temple Name - Main Title */}
+                  <div className="text-center mb-2">
+                    <div 
+                      className="text-lg font-bold px-6 py-2 rounded-full inline-block mb-1"
+                      style={{ backgroundColor: '#d4a464', color: 'white' }}
+                    >
+                      {ticket.Temple?.title || 'Candi Bersejarah'}
                     </div>
                   </div>
 
-                  {/* Purchase Button */}
-                  <button
-                    onClick={() => handleOpenPurchaseModal(ticket)}
-                    className="w-full btn btn-primary flex items-center justify-center space-x-2"
+                  {/* Description */}
+                  <div>
+                    <p className="text-sm text-center" style={{ 
+                      color: '#6c757d',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '100%',
+                      paddingLeft: '30px',
+                      paddingRight: '30px'
+                    }}>
+                      {ticket.description}
+                    </p>
+                  </div>
+
+                  {/* Price - Big and Prominent */}
+                  <div className="text-center mb-2">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatPrice(ticket.price)}
+                    </div>
+                  </div>
+
+                  {/* Ticket Stub - Bottom Section */}
+                  <div 
+                    className="pt-3 mt-3"
+                    style={{ 
+                      borderTop: '2px solid transparent',
+                      backgroundImage: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, #d4a464 8px, #d4a464 16px)',
+                      backgroundSize: '100% 2px',
+                      backgroundPosition: 'left top',
+                      backgroundRepeat: 'no-repeat'
+                    }}
                   >
-                    <Ticket size={18} />
-                    <span>Beli Tiket Sekarang</span>
-                    <ChevronRight size={18} />
-                  </button>
+                    <div className="flex items-center justify-between" style={{ paddingTop: '8px' }}>
+                      <div className="text-xs" style={{ color: '#6c757d' }}>
+                        <div>VALID FOR</div>
+                        <div className="font-semibold" style={{ color: '#243e3e' }}>SINGLE ENTRY</div>
+                      </div>
+                      
+                      {/* Buy Button */}
+                      <div className="flex items-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenPurchaseModal(ticket);
+                          }}
+                          className="px-4 py-2 rounded-lg text-white font-bold text-sm border-0 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
+                          style={{ 
+                            backgroundColor: '#d4a464', 
+                            border: 'none',
+                            boxShadow: '0 2px 4px rgba(212, 164, 100, 0.3)'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#c19653';
+                            e.target.style.boxShadow = '0 4px 12px rgba(212, 164, 100, 0.5)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#d4a464';
+                            e.target.style.boxShadow = '0 2px 4px rgba(212, 164, 100, 0.3)';
+                          }}
+                        >
+                          Beli Tiket
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Decorative Holes on Sides */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    left: '-10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '25.33334px',
+                    height: '65.33334px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '50%',
+                    border: '3px solid #d4a464'
+                  }}
+                />
+                <div 
+                  style={{
+                    position: 'absolute',
+                    right: '-10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '25.33334px',
+                    height: '65.33334px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '50%',
+                    border: '3px solid #d4a464'
+                  }}
+                />
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Ticket size={40} className="text-primary" />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#d4a464', opacity: 0.1 }}>
+              <Ticket size={40} style={{ color: '#d4a464' }} />
             </div>
-            <h3 className="text-lg font-semibold text-secondary mb-2">Belum Ada Tiket Tersedia</h3>
-            <p className="text-gray mb-6">
-              Saat ini belum ada tiket yang tersedia. Silakan cek kembali nanti.
+            <h3 className="text-lg font-semibold mb-2" style={{ color: '#243e3e' }}>
+              Belum Ada Tiket Tersedia
+            </h3>
+            <p className="mb-6" style={{ color: '#6c757d' }}>
+              Saat ini belum ada tiket yang tersedia. Silakan cek kembali nanti atau hubungi admin untuk informasi lebih lanjut.
             </p>
             <button
               onClick={() => navigate('/')}
-              className="btn btn-primary"
+              className="flex items-center space-x-2 mx-auto px-6 py-3 rounded-lg text-white font-bold transition-colors"
+              style={{ backgroundColor: '#d4a464' }}
             >
-              Kembali ke Beranda
+              <span>Kembali ke Beranda</span>
             </button>
           </div>
         )}
@@ -216,115 +347,166 @@ const TicketsPage = () => {
 
       {/* Purchase Modal */}
       {showPurchaseModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+        <div className="fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-sm z-[9999] overflow-y-auto">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl border-2 border-gray-200 relative" style={{ width: '480px', maxWidth: '90vw', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}>
               {/* Modal Header */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-secondary">Pesan Tiket</h2>
-                <button
-                  onClick={handleClosePurchaseModal}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X size={20} className="text-gray" />
-                </button>
-              </div>
-
-              {/* Ticket Info */}
-              {selectedTicket && (
-                <div className="bg-secondary-light rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-secondary mb-1">
-                    Tiket {selectedTicket.Temple?.title || 'Candi'}
-                  </h3>
-                  <p className="text-sm text-gray mb-2">{selectedTicket.description}</p>
-                  <div className="text-lg font-bold text-primary">
-                    {formatPrice(selectedTicket.price)} <span className="text-sm font-normal">per orang</span>
+              <div className="px-6 py-4 border-b border-gray-200" style={{ paddingTop: '24px' }}>
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: '#fef7e6' }}>
+                    <Ticket size={24} style={{ color: '#d4a464' }} />
                   </div>
-                </div>
-              )}
-
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-                  {error}
-                </div>
-              )}
-
-              {/* Form */}
-              <div className="space-y-4">
-                {/* Quantity Selector */}
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">
-                    Jumlah Tiket
-                  </label>
-                  <div className="flex items-center justify-center bg-gray-100 rounded-lg p-1 max-w-xs">
-                    <button
-                      onClick={() => handleQuantityChange(-1)}
-                      className="p-2 hover:bg-white rounded transition-colors"
-                      disabled={formData.quantity <= 1}
-                    >
-                      <Minus size={16} className="text-gray" />
-                    </button>
-                    <span className="px-4 py-2 text-lg font-semibold text-secondary min-w-[3rem] text-center">
-                      {formData.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange(1)}
-                      className="p-2 hover:bg-white rounded transition-colors"
-                    >
-                      <Plus size={16} className="text-gray" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Date Selector */}
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">
-                    Tanggal Kunjungan *
-                  </label>
-                  <div className="relative">
-                    <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray" />
-                    <input
-                      type="date"
-                      value={formData.validDate}
-                      onChange={handleDateChange}
-                      min={getMinDate()}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <p className="text-xs text-gray mt-1">Pilih tanggal kunjungan Anda</p>
-                </div>
-
-                {/* Total Price */}
-                <div className="bg-primary/10 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-secondary font-medium">Total Pembayaran:</span>
-                    <span className="text-xl font-bold text-primary">
-                      {formatPrice(getTotalPrice())}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray mt-1">
-                    {formData.quantity} tiket × {selectedTicket ? formatPrice(selectedTicket.price) : ''}
-                  </p>
+                  <h2 className="text-2xl font-bold" style={{ color: '#243e3e', marginBottom: '5px' }}>Detail Pemesanan</h2>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-3 mt-6">
-                <button
-                  onClick={handleClosePurchaseModal}
-                  className="btn btn-outline flex-1"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handlePurchaseTicket}
-                  disabled={purchaseLoading || !formData.validDate}
-                  className="btn btn-primary flex-1"
-                >
-                  {purchaseLoading ? 'Memproses...' : 'Beli Sekarang'}
-                </button>
+              <div className="p-6">
+                {/* Error Message */}
+                {error && (
+                  <div className="border border-red-300 text-red-800 px-4 py-3 rounded-lg mb-6 flex items-center space-x-3" style={{ backgroundColor: '#f8d7da' }}>
+                    <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse flex-shrink-0"></div>
+                    <span className="text-sm font-medium">{error}</span>
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {/* Date Selector */}
+                  <div>
+                    <label className="block font-bold" style={{ color: '#243e3e', fontSize: '18px', marginBottom: '10px' }}>
+                      Tanggal Kunjungan *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={formData.validDate}
+                        onChange={handleDateChange}
+                        min={getMinDate()}
+                        className="w-full pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 text-sm border"
+                        style={{ 
+                          border: '1px solid #d1d5db',
+                          focusRingColor: '#d4a464',
+                          backgroundColor: '#ffffff',
+                          paddingLeft: '12px'
+                        }}
+                        required
+                      />
+                    </div>
+                    <p className="text-xs mt-2" style={{ color: '#6c757d' }}>
+                      Pilih tanggal kunjungan yang diinginkan
+                    </p>
+                  </div>
+
+                  {/* Quantity Selector */}
+                  <div>
+                    <label className="block font-bold" style={{ color: '#243e3e', fontSize: '18px', marginBottom: '10px' }}>
+                      Jumlah Tiket
+                    </label>
+                    <div className="flex items-center justify-center p-3 max-w-[200px] mx-auto">
+                      <button
+                        onClick={() => handleQuantityChange(-1)}
+                        className="p-3 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-40"
+                        style={{ backgroundColor: '#d4a464', color: '#ffffff' }}
+                        disabled={formData.quantity <= 1}
+                      >
+                        <Minus size={18} />
+                      </button>
+                      <div className="px-8 py-2 mx-4">
+                        <span className="text-2xl font-bold text-center block min-w-[2rem]" style={{ color: '#243e3e' }}>
+                          {formData.quantity}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleQuantityChange(1)}
+                        className="p-3 hover:opacity-80 rounded-lg transition-opacity"
+                        style={{ backgroundColor: '#d4a464', color: '#ffffff' }}
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Total Price */}
+                  <div className="rounded-lg p-4 border-2" style={{ backgroundColor: '#fef7e6', borderColor: '#d4a464' }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-lg font-bold" style={{ color: '#243e3e' }}>Total Pembayaran:</span>
+                        <div className="text-sm" style={{ color: '#6c757d' }}>
+                          {formData.quantity} tiket × {selectedTicket ? formatPrice(selectedTicket.price) : ''}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-2xl font-bold" style={{ color: '#d4a464' }}>
+                          {formatPrice(getTotalPrice())}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4" style={{ marginTop: '24px' }}>
+                    <button
+                      onClick={handleClosePurchaseModal}
+                      className="flex items-center justify-center flex-1 py-3 text-sm font-bold rounded-lg text-white border-0 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
+                      style={{ 
+                        backgroundColor: '#d4a464', 
+                        border: 'none',
+                        boxShadow: '0 2px 4px rgba(212, 164, 100, 0.3)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#c19653';
+                        e.target.style.boxShadow = '0 4px 12px rgba(212, 164, 100, 0.5)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#d4a464';
+                        e.target.style.boxShadow = '0 2px 4px rgba(212, 164, 100, 0.3)';
+                      }}
+                    >
+                      Kembali
+                    </button>
+                    <button
+                      onClick={handlePurchaseTicket}
+                      disabled={purchaseLoading || !formData.validDate}
+                      className="flex items-center justify-center flex-1 py-3 text-sm font-bold rounded-lg text-white border-0 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ 
+                        backgroundColor: '#6c757d', 
+                        border: 'none',
+                        boxShadow: '0 2px 4px rgba(108, 117, 125, 0.3)'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!e.target.disabled) {
+                          e.target.style.backgroundColor = '#5a6268';
+                          e.target.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.5)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!e.target.disabled) {
+                          e.target.style.backgroundColor = '#6c757d';
+                          e.target.style.boxShadow = '0 2px 4px rgba(108, 117, 125, 0.3)';
+                        }
+                      }}
+                    >
+                      {purchaseLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          <span>Memproses...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Ticket size={18} className="mr-2" />
+                          <span>Beli Sekarang</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Information Note */}
+                  <div className="mt-6 p-4 rounded-lg" style={{ backgroundColor: '#f8f9fa', height: '87px' }}>
+                    <p className="text-xs leading-relaxed" style={{ color: '#6c757d' }}>
+                      <strong>Catatan:</strong> Tiket yang telah dibeli tidak dapat dibatalkan atau dikembalikan. 
+                      Pastikan tanggal dan jumlah tiket sudah sesuai sebelum melakukan pembelian.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
