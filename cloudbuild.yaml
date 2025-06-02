@@ -13,15 +13,16 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
-      - -c
+      - "-c"
       - |
-        if [ ! -f dist/index.html ]; then
-          echo " Build failed: dist/index.html not found"
+        cp app.yaml dist/
+        cd dist
+        if [ ! -f index.html ]; then
+          echo "Build failed: index.html not found" 
           exit 1
         fi
-        cp app.yaml dist/
         gcloud config set app/cloud_build_timeout 1600
-        gcloud app deploy dist/app.yaml --quiet
+        gcloud app deploy app.yaml --quiet
 
 substitutions:
   _API_URL: 'https://artefacto-backend-749281711221.us-central1.run.app/api'
