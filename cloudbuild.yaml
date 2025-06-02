@@ -15,20 +15,10 @@ steps:
     args:
       - "-c"
       - |
-        cp app.yaml dist/
-        cd dist
-        if [ ! -f index.html ]; then
-          echo "Build failed: index.html not found" 
+        if [ ! -f dist/index.html ]; then
+          echo "Build failed: index.html not found"
           exit 1
         fi
         gcloud config set app/cloud_build_timeout 1600
-        gcloud app deploy app.yaml --quiet
-
-substitutions:
-  _API_URL: 'https://artefacto-backend-749281711221.us-central1.run.app/api'
-
-timeout: "1600s"
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+        gcloud app deploy --quiet
 

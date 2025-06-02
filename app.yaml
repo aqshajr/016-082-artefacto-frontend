@@ -6,8 +6,6 @@ handlers:
     static_dir: dist/assets
     secure: always
     expiration: "1d"
-    http_headers:
-      Cache-Control: "public, max-age=86400"
 
   - url: /(.*\.(ico|txt|xml|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))$
     static_files: dist/\1
@@ -27,6 +25,3 @@ handlers:
 env_variables:
   NODE_ENV: production
 
-automatic_scaling:
-  min_instances: 0
-  max_instances: 5
