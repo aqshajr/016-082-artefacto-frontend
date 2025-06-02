@@ -19,8 +19,10 @@ steps:
           echo "Build failed: index.html not found"
           exit 1
         fi
+        echo "Authenticating with correct service account..."
+        gcloud config set account artefacto-backend-sa@g-04-450802.iam.gserviceaccount.com
         gcloud config set app/cloud_build_timeout 1600
-        gcloud app deploy --quiet
+        gcloud app deploy --quiet --impersonate-service-account=artefacto-backend-sa@g-04-450802.iam.gserviceaccount.com
 
 timeout: "1600s"
 
