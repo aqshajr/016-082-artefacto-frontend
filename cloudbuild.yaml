@@ -20,9 +20,10 @@ steps:
           exit 1
         fi
         gcloud config set app/cloud_build_timeout 1600
-        gcloud app deploy --quiet --region=us-central
+        gcloud app deploy --quiet
 
 timeout: "1600s"
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
