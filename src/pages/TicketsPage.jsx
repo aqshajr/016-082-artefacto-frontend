@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, ChevronRight, MapPin, Clock, Minus, Plus, X, Calendar } from 'lucide-react';
+import { Ticket, ChevronRight, MapPin, Clock, Minus, Plus, X, Calendar, ArrowLeft } from 'lucide-react';
 import { ticketAPI, transactionAPI } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
@@ -141,6 +141,18 @@ const TicketsPage = () => {
 
   return (
     <div className="min-h-screen pb-16" style={{ backgroundColor: '#f8f9fa' }}>
+      {/* Breadcrumb Navigation */}
+      <div className="border-t border-gray-100" style={{ background: 'linear-gradient(90deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)' }}>
+        <div style={{ padding: '12px 20px' }}>
+          <div className="flex items-center" style={{ height: '60px' }}>
+            <div style={{ marginLeft: '100px' }}>
+              <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', fontSize: '18px', fontWeight: 'bold' }}>Daftar Tiket</h2>
+              <p className="text-gray text-sm" style={{ marginBottom: '0px' }}>Pilih dan beli tiket untuk candi yang ingin dikunjungi</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="py-6" style={{ paddingLeft: '120px', paddingRight: '120px' }}>
         <div className="flex items-center justify-between mb-6">
           <div className="bg-white rounded-xl px-6 shadow-sm flex items-center" style={{ height: '44px' }}>
@@ -148,8 +160,8 @@ const TicketsPage = () => {
               <div className="text-3xl font-bold" style={{ color: '#d4a464' }}>{tickets.length}</div>
               <div className="text-sm font-bold" style={{ color: '#6c757d' }}>Tiket Tersedia</div>
             </div>
-          </div>
         </div>
+      </div>
 
         {/* Tickets List */}
         {tickets.length > 0 ? (
@@ -163,7 +175,7 @@ const TicketsPage = () => {
                   borderRadius: '16px 16px 4px 4px',
                   position: 'relative',
                   overflow: 'hidden',
-                  height: '260px'
+                  height: '280px'
                 }}
                 onClick={() => handleOpenPurchaseModal(ticket)}
               >
@@ -194,10 +206,11 @@ const TicketsPage = () => {
                     background: 'linear-gradient(90deg, #d4a464 0%, #b8956b 100%)',
                     padding: '12px 20px',
                     borderRadius: '14px 14px 0 0',
-                    marginBottom: '2px'
+                    marginBottom: '2px',
+                    height: '64px'
                   }}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between" style={{ height: '40px' }}>
                     <div className="text-white font-bold text-lg">
                       🎫 TIKET MASUK
                     </div>
@@ -219,7 +232,7 @@ const TicketsPage = () => {
                   <div className="text-center mb-2">
                     <div 
                       className="text-lg font-bold px-6 py-2 rounded-full inline-block mb-1"
-                      style={{ backgroundColor: '#d4a464', color: 'white' }}
+                      style={{ backgroundColor: '#d4a464', color: 'white', marginTop: '10px' }}
                     >
                       {ticket.Temple?.title || 'Candi Bersejarah'}
                     </div>
@@ -243,7 +256,7 @@ const TicketsPage = () => {
                   {/* Price - Big and Prominent */}
                   <div className="text-center mb-2">
                     <div className="text-2xl font-bold text-green-600">
-                      {formatPrice(ticket.price)}
+                        {formatPrice(ticket.price)}
                     </div>
                   </div>
 
@@ -258,7 +271,7 @@ const TicketsPage = () => {
                       backgroundRepeat: 'no-repeat'
                     }}
                   >
-                    <div className="flex items-center justify-between" style={{ paddingTop: '8px' }}>
+                    <div className="flex items-center justify-between" style={{ paddingTop: '11px' }}>
                       <div className="text-xs" style={{ color: '#6c757d' }}>
                         <div>VALID FOR</div>
                         <div className="font-semibold" style={{ color: '#243e3e' }}>SINGLE ENTRY</div>
@@ -266,7 +279,7 @@ const TicketsPage = () => {
                       
                       {/* Buy Button */}
                       <div className="flex items-center">
-                        <button
+                  <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenPurchaseModal(ticket);
@@ -287,7 +300,7 @@ const TicketsPage = () => {
                           }}
                         >
                           Beli Tiket
-                        </button>
+                  </button>
                       </div>
                     </div>
                   </div>
@@ -361,26 +374,26 @@ const TicketsPage = () => {
               </div>
 
               <div className="p-6">
-                {/* Error Message */}
-                {error && (
+              {/* Error Message */}
+              {error && (
                   <div className="border border-red-300 text-red-800 px-4 py-3 rounded-lg mb-6 flex items-center space-x-3" style={{ backgroundColor: '#f8d7da' }}>
                     <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse flex-shrink-0"></div>
                     <span className="text-sm font-medium">{error}</span>
-                  </div>
-                )}
+                </div>
+              )}
 
                 <div className="space-y-6">
-                  {/* Date Selector */}
-                  <div>
+                {/* Date Selector */}
+                <div>
                     <label className="block font-bold" style={{ color: '#243e3e', fontSize: '18px', marginBottom: '10px' }}>
-                      Tanggal Kunjungan *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        value={formData.validDate}
-                        onChange={handleDateChange}
-                        min={getMinDate()}
+                    Tanggal Kunjungan *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      value={formData.validDate}
+                      onChange={handleDateChange}
+                      min={getMinDate()}
                         className="w-full pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 text-sm border"
                         style={{ 
                           border: '1px solid #d1d5db',
@@ -388,8 +401,8 @@ const TicketsPage = () => {
                           backgroundColor: '#ffffff',
                           paddingLeft: '12px'
                         }}
-                        required
-                      />
+                      required
+                    />
                     </div>
                     <p className="text-xs mt-2" style={{ color: '#6c757d' }}>
                       Pilih tanggal kunjungan yang diinginkan
@@ -423,11 +436,11 @@ const TicketsPage = () => {
                         <Plus size={18} />
                       </button>
                     </div>
-                  </div>
+                </div>
 
-                  {/* Total Price */}
+                {/* Total Price */}
                   <div className="rounded-lg p-4 border-2" style={{ backgroundColor: '#fef7e6', borderColor: '#d4a464' }}>
-                    <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
                       <div>
                         <span className="text-lg font-bold" style={{ color: '#243e3e' }}>Total Pembayaran:</span>
                         <div className="text-sm" style={{ color: '#6c757d' }}>
@@ -436,16 +449,16 @@ const TicketsPage = () => {
                       </div>
                       <div>
                         <span className="text-2xl font-bold" style={{ color: '#d4a464' }}>
-                          {formatPrice(getTotalPrice())}
-                        </span>
-                      </div>
-                    </div>
+                      {formatPrice(getTotalPrice())}
+                    </span>
                   </div>
+                </div>
+              </div>
 
-                  {/* Action Buttons */}
+              {/* Action Buttons */}
                   <div className="flex space-x-4" style={{ marginTop: '24px' }}>
-                    <button
-                      onClick={handleClosePurchaseModal}
+                <button
+                  onClick={handleClosePurchaseModal}
                       className="flex items-center justify-center flex-1 py-3 text-sm font-bold rounded-lg text-white border-0 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
                       style={{ 
                         backgroundColor: '#d4a464', 
@@ -462,10 +475,10 @@ const TicketsPage = () => {
                       }}
                     >
                       Kembali
-                    </button>
-                    <button
-                      onClick={handlePurchaseTicket}
-                      disabled={purchaseLoading || !formData.validDate}
+                </button>
+                <button
+                  onClick={handlePurchaseTicket}
+                  disabled={purchaseLoading || !formData.validDate}
                       className="flex items-center justify-center flex-1 py-3 text-sm font-bold rounded-lg text-white border-0 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ 
                         backgroundColor: '#6c757d', 
@@ -484,7 +497,7 @@ const TicketsPage = () => {
                           e.target.style.boxShadow = '0 2px 4px rgba(108, 117, 125, 0.3)';
                         }
                       }}
-                    >
+                >
                       {purchaseLoading ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -496,7 +509,7 @@ const TicketsPage = () => {
                           <span>Beli Sekarang</span>
                         </>
                       )}
-                    </button>
+                </button>
                   </div>
 
                   {/* Information Note */}

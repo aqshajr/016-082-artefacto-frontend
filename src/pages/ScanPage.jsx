@@ -3,6 +3,7 @@ import { Camera, Upload, X, Zap, Eye, Bookmark } from 'lucide-react';
 import { mlAPI } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import { artifactAPI } from '../utils/api';
 
 const ScanPage = () => {
   const [isScanning, setIsScanning] = useState(false);
@@ -98,7 +99,41 @@ const ScanPage = () => {
       console.log('Scan response:', response);
 
       if (response && response.data) {
-        setScanResult(response.data);
+        // Handle ML API response format: {prediction: 'brahma', confidence: 0.77}
+        const mlResult = response.data;
+        console.log('ML Result:', mlResult);
+        
+        if (mlResult.prediction && mlResult.confidence) {
+          // Set confidence threshold - only show as recognized if confidence > 50%
+          const confidenceThreshold = 0.5;
+          
+          if (mlResult.confidence >= confidenceThreshold) {
+            // Create a scan result object that the UI can use
+            const scanResultData = {
+              prediction: mlResult.prediction,
+              confidence: mlResult.confidence,
+              // For now, we'll show the prediction as detected artifact
+              artifact: {
+                title: mlResult.prediction.charAt(0).toUpperCase() + mlResult.prediction.slice(1),
+                description: `Artefak terdeteksi sebagai ${mlResult.prediction} dengan AI Machine Learning.`,
+                period: 'Klasik',
+                artifactID: mlResult.prediction // Use prediction as ID for now
+              }
+            };
+            setScanResult(scanResultData);
+          } else {
+            // Low confidence - show as not recognized but include prediction info
+            setScanResult({ 
+              artifact: null, 
+              prediction: mlResult.prediction, 
+              confidence: mlResult.confidence,
+              lowConfidence: true
+            });
+          }
+        } else {
+          // No prediction or low confidence - show as not recognized
+          setScanResult({ artifact: null, prediction: null, confidence: 0 });
+        }
       } else {
         throw new Error('Invalid response from server');
       }
@@ -130,62 +165,92 @@ const ScanPage = () => {
     }
   };
 
-  const handleBookmark = (artifactId) => {
-    const isBookmarked = localStorage.getItem(`bookmark_${artifactId}`) === 'true';
-    
-    if (isBookmarked) {
-      localStorage.removeItem(`bookmark_${artifactId}`);
-    } else {
-      localStorage.setItem(`bookmark_${artifactId}`, 'true');
+  const handleBookmark = async (artifactId) => {
+    try {
+      // Call bookmark API
+      await artifactAPI.bookmarkArtifact(artifactId);
+      
+      // Toggle bookmark status in scan result
+      setScanResult(prev => ({
+        ...prev,
+        isBookmarked: !prev.isBookmarked
+      }));
+    } catch (err) {
+      console.error('Error toggling bookmark:', err);
+      setError('Gagal mengubah bookmark. Silakan coba lagi.');
     }
-    
-    // Update scan result to reflect bookmark status
-    setScanResult(prev => ({
-      ...prev,
-      isBookmarked: !isBookmarked
-    }));
   };
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Page Header */}
-      <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <h1 className="text-xl font-bold text-secondary">Scan Artefak</h1>
-          <p className="text-gray text-sm mt-1">Identifikasi artefak dengan AI</p>
+      {/* Breadcrumb Navigation */}
+      <div className="border-t border-gray-100" style={{ background: 'linear-gradient(90deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)' }}>
+        <div style={{ padding: '12px 20px' }}>
+          <div className="flex items-center" style={{ height: '60px' }}>
+            <div style={{ marginLeft: '100px' }}>
+              <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', fontSize: '18px', fontWeight: 'bold' }}>Scan Artefak</h2>
+              <p className="text-gray text-sm" style={{ marginBottom: '0px' }}>Identifikasi artefak dengan teknologi AI</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="container py-6">
         {/* Camera Modal */}
         {showCamera && (
-          <div className="fixed inset-0 bg-black z-50 flex flex-col">
-            <div className="flex items-center justify-between p-4 bg-black/50">
-              <h3 className="text-white font-semibold">Ambil Foto</h3>
+          <div 
+            className="fixed inset-0 bg-black flex flex-col"
+            style={{ 
+              zIndex: 9999,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh'
+            }}
+          >
+            <div className="flex items-center justify-end p-4 bg-black/50" style={{ zIndex: 10000 }}>
               <button
                 onClick={stopCamera}
-                className="p-2 bg-white/20 rounded-full text-white"
+                className="btn btn-secondary flex items-center justify-center"
+                style={{ width: '40px', height: '40px', padding: '0', zIndex: 10001 }}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             </div>
             
-            <div className="flex-1 relative">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
-              
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-                <button
-                  onClick={capturePhoto}
-                  className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg"
-                >
-                  <Camera size={24} className="text-gray-800" />
-                </button>
+            {/* Camera preview container - 16:9 ratio */}
+            <div className="flex-1 flex flex-col items-center justify-center p-4" style={{ zIndex: 9999 }}>
+              <div 
+                className="relative rounded-lg overflow-hidden shadow-md mb-6"
+                style={{ 
+                  width: '300px', 
+                  height: '533px',
+                  backgroundColor: '#000'
+                }}
+              >
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover"
+                  style={{ 
+                    width: '100%',
+                    height: '100%'
+                  }}
+                />
               </div>
+              
+              {/* Capture button below preview */}
+              <button
+                onClick={capturePhoto}
+                className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-300 hover:bg-gray-100 transition-all"
+                style={{ zIndex: 10002 }}
+              >
+                <Camera size={28} className="text-primary" />
+              </button>
             </div>
             
             <canvas ref={canvasRef} className="hidden" />
@@ -193,24 +258,109 @@ const ScanPage = () => {
         )}
 
         {/* Upload Section */}
-        {!scanResult && (
+        {true && (
           <div className="bg-white rounded-xl p-6 mb-6">
-            <h2 className="text-lg font-semibold text-secondary mb-4">Pilih Gambar Artefak</h2>
+            <h2 className="text-lg font-bold text-secondary mb-4">Pilih Gambar Artefak</h2>
             
             {previewImage ? (
               <div className="mb-4">
-                <img 
-                  src={previewImage} 
-                  alt="Preview" 
-                  className="w-full h-64 object-cover rounded-lg"
-                />
-                <button
-                  onClick={resetScan}
-                  className="mt-3 text-red-500 text-sm flex items-center space-x-1"
-                >
-                  <X size={16} />
-                  <span>Hapus Gambar</span>
-                </button>
+                {/* Delete Button - Above image with logout style */}
+                {!scanResult && (
+                  <div className="flex justify-end mb-3">
+                    <button
+                      onClick={resetScan}
+                      className="btn btn-secondary flex items-center justify-center"
+                      style={{ width: '40px', height: '40px', padding: '0' }}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                
+                {/* Fixed size image preview - 16:9 ratio */}
+                <div className="flex justify-center mb-4">
+                  <img 
+                    src={previewImage} 
+                    alt="Preview" 
+                    className="object-cover rounded-lg shadow-md"
+                    style={{ 
+                      width: '300px !important', 
+                      height: '533px !important',
+                      maxWidth: '300px',
+                      maxHeight: '533px',
+                      minWidth: '300px',
+                      minHeight: '533px'
+                    }}
+                  />
+                </div>
+                
+                {/* Scan Result - Simple version below image */}
+                {scanResult && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    {scanResult.artifact ? (
+                      <div className="text-center">
+                        <h4 className="text-lg font-bold text-secondary mb-2">
+                          {scanResult.artifact.title}
+                        </h4>
+                        <div className="flex items-center justify-center space-x-4 mb-2">
+                          <span className="text-sm text-gray">
+                            Confidence: {Math.round(scanResult.confidence * 100)}%
+                          </span>
+                        </div>
+                        {/* Simple Confidence Bar */}
+                        <div className="max-w-xs mx-auto">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                scanResult.confidence >= 0.8 ? 'bg-green-500' :
+                                scanResult.confidence >= 0.6 ? 'bg-yellow-500' : 'bg-orange-500'
+                              }`}
+                              style={{ width: `${Math.round(scanResult.confidence * 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : scanResult.lowConfidence ? (
+                      <div className="text-center">
+                        <h4 className="text-md font-medium text-gray-600 mb-2">
+                          Kemungkinan: {scanResult.prediction}
+                        </h4>
+                        <div className="flex items-center justify-center space-x-4 mb-2">
+                          <span className="text-sm text-gray">
+                            Confidence: {Math.round(scanResult.confidence * 100)}% (Rendah)
+                          </span>
+                        </div>
+                        <div className="max-w-xs mx-auto">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="h-2 rounded-full bg-red-400"
+                              style={{ width: `${Math.round(scanResult.confidence * 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <h4 className="text-md font-medium text-gray-600">
+                          Artefak Tidak Dikenali
+                        </h4>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Scan Again Button - Full Width */}
+                {scanResult && (
+                  <div className="mt-4">
+                    <button
+                      onClick={resetScan}
+                      className="w-full btn btn-secondary flex items-center justify-center space-x-2"
+                    >
+                      <Zap size={16} />
+                      <span>Scan Lagi</span>
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -242,7 +392,7 @@ const ScanPage = () => {
               className="hidden"
             />
 
-            {selectedImage && (
+            {selectedImage && !scanResult && (
               <button
                 onClick={handleScan}
                 disabled={isScanning}
@@ -268,80 +418,6 @@ const ScanPage = () => {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
             {error}
-          </div>
-        )}
-
-        {/* Scan Result */}
-        {scanResult && (
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-secondary">Hasil Scan</h3>
-                <button
-                  onClick={resetScan}
-                  className="text-primary text-sm font-medium"
-                >
-                  Scan Lagi
-                </button>
-              </div>
-
-              {scanResult.artifact ? (
-                <div>
-                  <h4 className="text-xl font-bold text-secondary mb-2">
-                    {scanResult.artifact.title}
-                  </h4>
-                  
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="text-sm text-gray">
-                      Confidence: {Math.round(scanResult.confidence * 100)}%
-                    </div>
-                    <div className="text-sm text-gray">
-                      Period: {scanResult.artifact.period || 'Unknown'}
-                    </div>
-                  </div>
-
-                  <p className="text-gray mb-4">
-                    {scanResult.artifact.description}
-                  </p>
-
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => window.location.href = `/artifacts/${scanResult.artifact.artifactID}`}
-                      className="btn btn-primary flex items-center space-x-2"
-                    >
-                      <Eye size={16} />
-                      <span>Lihat Detail</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => handleBookmark(scanResult.artifact.artifactID)}
-                      className={`btn ${scanResult.isBookmarked ? 'btn-secondary' : 'btn-outline'} flex items-center space-x-2`}
-                    >
-                      <Bookmark size={16} />
-                      <span>{scanResult.isBookmarked ? 'Tersimpan' : 'Simpan'}</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Camera size={32} className="text-gray-400" />
-                  </div>
-                  <h4 className="text-lg font-semibold text-secondary mb-2">
-                    Artefak Tidak Dikenali
-                  </h4>
-                  <p className="text-gray mb-4">
-                    Maaf, kami tidak dapat mengidentifikasi artefak ini. Coba dengan gambar yang lebih jelas atau artefak lain.
-                  </p>
-                  <button
-                    onClick={resetScan}
-                    className="btn btn-primary"
-                  >
-                    Coba Lagi
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         )}
 

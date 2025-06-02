@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -19,6 +19,15 @@ const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Restore error from sessionStorage if page was refreshed
+  useEffect(() => {
+    const savedError = sessionStorage.getItem('registerError');
+    if (savedError) {
+      setError(savedError);
+      sessionStorage.removeItem('registerError'); // Clear after showing
+    }
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -31,18 +40,29 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Prevent any default form behavior
+    if (e.target) {
+      e.target.preventDefault?.();
+    }
+    
     setError('');
 
     // Validasi password confirmation
     if (formData.password !== formData.passwordConfirmation) {
-      setError('Password dan konfirmasi password tidak cocok.');
-      return;
+      const errorMessage = 'Password dan konfirmasi password tidak cocok.';
+      sessionStorage.setItem('registerError', errorMessage);
+      setError(errorMessage);
+      return false;
     }
 
     // Validasi password length
     if (formData.password.length < 8) {
-      setError('Password harus minimal 8 karakter.');
-      return;
+      const errorMessage = 'Password harus minimal 8 karakter.';
+      sessionStorage.setItem('registerError', errorMessage);
+      setError(errorMessage);
+      return false;
     }
 
     setIsLoading(true);
@@ -55,17 +75,28 @@ const RegisterPage = () => {
         formData.passwordConfirmation
       );
       
+      if (!result || !result.success) {
+        const errorMessage = result?.error || 'Registrasi gagal. Silakan coba lagi.';
+        sessionStorage.setItem('registerError', errorMessage);
+        setError(errorMessage);
+        setIsLoading(false);
+        return false;
+      }
+      
       if (result.success) {
         // Setelah register berhasil, redirect ke home (karena sudah auto login)
         navigate('/');
-      } else {
-        setError(result.error);
       }
     } catch (err) {
-      setError('Terjadi kesalahan. Silakan coba lagi.');
+      console.error('RegisterPage: Register error:', err);
+      const errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+      sessionStorage.setItem('registerError', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
+    
+    return false;
   };
 
   if (isLoading) {
@@ -73,150 +104,213 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary-light relative overflow-hidden">
-
-
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#f8f9fa' }}>
       {/* Background Image */}
       <div className="absolute inset-0">
         <img 
-          src="https://images.unsplash.com/photo-1555400082-8c5cd5b3c3b1?w=400&h=800&fit=crop&crop=center"
+          src="https://storage.googleapis.com/artefacto-backend-service/assets/bg_loginregister.jpg"
           alt="Prambanan Temple Background"
           className="w-full h-full object-cover"
+          style={{ minHeight: '100vh', minWidth: '100vw' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/50"></div>
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center min-h-screen p-6">
+      <div className="relative z-10 flex flex-col justify-center min-h-screen px-4 py-8 sm:px-8 md:px-12 lg:px-16">
         {/* Register Form Card */}
-        <div className="bg-white rounded-3xl p-6 mb-6 shadow-xl max-w-sm mx-auto w-full max-h-[85vh] overflow-y-auto">
+        <div className="bg-white p-6 sm:p-8 mb-6 shadow-xl mx-auto w-full max-h-[90vh] overflow-y-auto" style={{ 
+          borderRadius: '24px', 
+          maxWidth: '420px',
+          border: '1px solid #e9ecef'
+        }}>
           {/* Logo dan Title */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <div 
+              className="mx-auto mb-4 flex items-center justify-center"
+              style={{ 
+                width: '80px', 
+                height: '80px', 
+                backgroundColor: '#d4a464', 
+                borderRadius: '16px' 
+              }}
+            >
               <img 
                 src="https://storage.googleapis.com/artefacto-backend-service/assets/logo_artefacto.jpg"
                 alt="Artefacto Logo"
-                className="w-12 h-12 object-contain"
+                className="object-contain"
+                style={{ width: '80px', height: '80px' }}
               />
             </div>
-            <h1 className="text-2xl font-bold text-secondary mb-2">ARTEFACTO</h1>
-            <p className="text-gray text-sm">Art & Culture Exploration</p>
+            <h1 className="font-bold text-secondary mb-2" style={{ fontSize: '24px', fontWeight: 'bold' }}>ARTEFACTO</h1>
+            <p className="text-gray" style={{ fontSize: '14px', marginBottom: '16px' }}>Bergabunglah dalam Petualangan Budaya</p>
           </div>
 
-          {/* Error Message */}
+          {/* Error Message - Simple and Always Visible */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
-              {error}
+            <div style={{ 
+              backgroundColor: '#fee2e2', 
+              border: '1px solid #fca5a5',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '16px'
+            }}>
+              <p style={{ color: '#dc2626', fontSize: '14px', margin: '0', fontWeight: '500' }}>
+                ❌ {error}
+              </p>
             </div>
           )}
 
           {/* Register Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form 
+            onSubmit={handleSubmit} 
+            style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+            onReset={(e) => e.preventDefault()}
+            autoComplete="off"
+          >
             {/* Username Field */}
-            <div className="form-group">
-              <label htmlFor="username" className="form-label">Username</label>
+            <div>
+              <label htmlFor="username" className="font-medium text-secondary mb-2 block" style={{ fontSize: '16px', fontWeight: 'bold' }}>Username</label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder="Enter your username"
-                className="form-input"
+                placeholder="Masukkan username Anda"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                style={{ 
+                  height: '44px',
+                  fontSize: '14px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '12px'
+                }}
                 required
               />
             </div>
 
             {/* Email Field */}
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">Email</label>
+            <div>
+              <label htmlFor="email" className="font-medium text-secondary mb-2 block" style={{ fontSize: '16px', fontWeight: 'bold' }}>Email</label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your email"
-                className="form-input"
+                placeholder="Masukkan email Anda"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                style={{ 
+                  height: '44px',
+                  fontSize: '14px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '12px'
+                }}
                 required
               />
             </div>
 
             {/* Password Field */}
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">Password</label>
-              <div className="relative">
+            <div>
+              <label htmlFor="password" className="font-medium text-secondary mb-2 block" style={{ fontSize: '16px', fontWeight: 'bold' }}>Password</label>
+              <div className="relative" style={{ height: '44px' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="Enter your password (min 8 characters)"
-                  className="form-input pr-10"
+                  placeholder="Masukkan password (min 8 karakter)"
+                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                  style={{ 
+                    height: '44px',
+                    fontSize: '14px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '12px'
+                  }}
                   required
                 />
-                <button
-                  type="button"
+                <div
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray hover:text-secondary transition-colors p-1"
+                  className="absolute right-0 flex items-center justify-center w-12 text-primary hover:text-primary-yellow cursor-pointer transition-colors"
+                  style={{ top: '0', height: '44px', marginRight: '10px' }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                </div>
               </div>
             </div>
 
             {/* Password Confirmation Field */}
-            <div className="form-group">
-              <label htmlFor="passwordConfirmation" className="form-label">Confirm Password</label>
-              <div className="relative">
+            <div>
+              <label htmlFor="passwordConfirmation" className="font-medium text-secondary mb-2 block" style={{ fontSize: '16px', fontWeight: 'bold' }}>Konfirmasi Password</label>
+              <div className="relative" style={{ height: '44px' }}>
                 <input
                   type={showPasswordConfirmation ? 'text' : 'password'}
                   id="passwordConfirmation"
                   name="passwordConfirmation"
                   value={formData.passwordConfirmation}
                   onChange={handleInputChange}
-                  placeholder="Confirm your password"
-                  className="form-input pr-10"
+                  placeholder="Konfirmasi password Anda"
+                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                  style={{ 
+                    height: '44px',
+                    fontSize: '14px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '12px'
+                  }}
                   required
                 />
-                <button
-                  type="button"
+                <div
                   onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray hover:text-secondary transition-colors p-1"
+                  className="absolute right-0 flex items-center justify-center w-12 text-primary hover:text-primary-yellow cursor-pointer transition-colors"
+                  style={{ top: '0', height: '44px', marginRight: '10px' }}
                 >
                   {showPasswordConfirmation ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                </div>
               </div>
-            </div>
-
-            {/* Login Link */}
-            <div className="text-center">
-              <span className="text-gray text-sm">Already have an account? </span>
-              <Link 
-                to="/login" 
-                className="text-primary font-medium text-sm hover:text-primary-yellow transition-colors"
-              >
-                Login
-              </Link>
             </div>
 
             {/* Register Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="btn btn-primary btn-full btn-lg flex items-center justify-between"
+              className="btn btn-primary flex items-center justify-center w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ 
+                height: '48px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                borderRadius: '12px',
+                marginTop: '8px'
+              }}
             >
-              <span>Register</span>
-              <ChevronRight size={20} />
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Sedang Daftar...</span>
+                </div>
+              ) : (
+                <span>Daftar</span>
+              )}
             </button>
+
+            {/* Login Link */}
+            <div className="text-center" style={{ marginTop: '16px' }}>
+              <span className="text-gray" style={{ fontSize: '14px' }}>Sudah punya akun? </span>
+              <Link 
+                to="/login" 
+                className="text-primary font-medium hover:text-primary-yellow transition-colors"
+                style={{ fontSize: '14px', fontWeight: 'bold' }}
+              >
+                Masuk
+              </Link>
+            </div>
           </form>
         </div>
 
         {/* Location Info */}
         <div className="flex items-center justify-center text-white">
           <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
-          <span className="text-sm opacity-90">Prambanan Temple, Indonesia</span>
+          <span style={{ fontSize: '14px', opacity: '0.9' }}>Candi Prambanan, Indonesia</span>
         </div>
       </div>
     </div>

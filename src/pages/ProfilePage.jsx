@@ -203,45 +203,34 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Page Header */}
-      <div className="bg-white shadow-sm">
-        <div className="container py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-secondary">Profil</h1>
-              <p className="text-gray text-sm mt-1">Kelola informasi akun Anda</p>
+      {/* Breadcrumb Navigation */}
+      <div className="border-t border-gray-100" style={{ background: 'linear-gradient(90deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)' }}>
+        <div style={{ padding: '12px 20px' }}>
+          <div className="flex items-center" style={{ height: '60px' }}>
+            <div style={{ marginLeft: '100px' }}>
+              <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', fontSize: '18px', fontWeight: 'bold' }}>Profil</h2>
+              <p className="text-gray text-sm" style={{ marginBottom: '0px' }}>Kelola informasi akun Anda</p>
             </div>
-            <button
-              onClick={() => {
-                if (window.confirm('Apakah Anda yakin ingin keluar?')) {
-                  logout();
-                }
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-            >
-              <LogOut size={16} />
-              <span>Logout</span>
-            </button>
+            <div style={{ marginLeft: 'auto', marginRight: '100px' }}>
+              <button
+                onClick={() => {
+                  if (window.confirm('Apakah Anda yakin ingin keluar?')) {
+                    logout();
+                  }
+                }}
+                className="btn btn-secondary flex items-center space-x-2"
+              >
+                <LogOut size={18} />
+                <span className="font-bold">Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-6">
+      <div style={{ padding: '24px 120px', marginLeft: '300px', marginRight: '300px' }}>
         {/* Profile Card */}
         <div className="bg-white rounded-xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-secondary">Informasi Profil</h2>
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-yellow transition-colors"
-              >
-                <Edit3 size={16} />
-                <span>Edit Profil</span>
-              </button>
-            )}
-          </div>
-
           {/* Success Message */}
           {success && (
             <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg mb-4">
@@ -261,36 +250,47 @@ const ProfilePage = () => {
             <div className="space-y-6">
               {/* Profile Picture */}
               <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                <div className="bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/20" style={{ width: '250px', height: '250px' }}>
                   {user?.profilePicture ? (
                     <img 
                       src={`${user.profilePicture}?t=${Date.now()}`}
                       alt="Profile" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center"
+                      style={{ aspectRatio: '1/1', width: '250px' }}
                     />
                   ) : (
-                    <User size={40} className="text-primary" />
+                    <User size={125} className="text-primary" />
                   )}
                 </div>
+              </div>
+
+              {/* Edit Profile Button */}
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="btn btn-secondary flex items-center space-x-2"
+                >
+                  <Edit3 size={18} />
+                  <span className="font-bold">Edit Profil</span>
+                </button>
               </div>
 
               {/* User Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-gray">Username</label>
-                  <p className="text-secondary font-medium mt-1">{user?.username}</p>
+                  <label className="font-medium text-gray" style={{ fontSize: '18px' }}>Username</label>
+                  <p className="text-secondary font-medium mt-1" style={{ fontSize: '16px' }}>{user?.username}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray">Email</label>
-                  <p className="text-secondary font-medium mt-1">{user?.email}</p>
+                  <label className="font-medium text-gray" style={{ fontSize: '18px' }}>Email</label>
+                  <p className="text-secondary font-medium mt-1" style={{ fontSize: '16px' }}>{user?.email}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray">Role</label>
-                  <p className="text-secondary font-medium mt-1">
-                    {isAdmin() ? 'Administrator' : 'User'}
-                  </p>
-                </div>
-
+                {isAdmin() && (
+                  <div>
+                    <label className="font-medium text-gray" style={{ fontSize: '18px' }}>Role</label>
+                    <p className="text-secondary font-medium mt-1" style={{ fontSize: '16px' }}>Administrator</p>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -298,21 +298,23 @@ const ProfilePage = () => {
             <form onSubmit={handleEditProfile} className="space-y-6">
               {/* Profile Picture Upload */}
               <div className="flex flex-col items-center space-y-4">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                <div className="bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/20" style={{ width: '250px', height: '250px' }}>
                   {previewImage ? (
                     <img 
                       src={previewImage} 
                       alt="Preview" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center"
+                      style={{ aspectRatio: '1/1', width: '250px' }}
                     />
                   ) : user?.profilePicture ? (
                     <img 
                       src={`${user.profilePicture}?t=${Date.now()}`}
                       alt="Profile" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center"
+                      style={{ aspectRatio: '1/1', width: '250px' }}
                     />
                   ) : (
-                    <User size={40} className="text-primary" />
+                    <User size={125} className="text-primary" />
                   )}
                 </div>
                 <div>
@@ -326,10 +328,10 @@ const ProfilePage = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-3 py-2 bg-secondary-light text-secondary rounded-lg hover:bg-primary hover:text-white transition-colors"
+                    className="btn btn-secondary flex items-center space-x-2"
                   >
-                    <Camera size={16} />
-                    <span>Ganti Foto</span>
+                    <Camera size={18} />
+                    <span className="font-bold">Ganti Foto</span>
                   </button>
                 </div>
               </div>
@@ -364,65 +366,67 @@ const ProfilePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="form-label">Password Saat Ini</label>
-                  <div className="relative">
+                  <div className="relative" style={{ height: '44px' }}>
                     <input
                       type={showCurrentPassword ? "text" : "password"}
                       name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleInputChange}
                       className="form-input pr-12"
+                      style={{ height: '44px' }}
                       placeholder="Diperlukan untuk ubah email/password"
                     />
-                    <button
-                      type="button"
+                    <div
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray hover:text-primary"
+                      className="absolute right-0 flex items-center justify-center w-12 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                      style={{ top: '0', height: '44px', marginRight: '10px' }}
                     >
-                      {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
+                      {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </div>
                   </div>
                   <p className="text-xs text-gray mt-1">Hanya diperlukan jika mengubah email atau password</p>
                 </div>
                 <div>
                   <label className="form-label">Password Baru (Opsional)</label>
-                  <div className="relative">
+                  <div className="relative" style={{ height: '44px' }}>
                     <input
                       type={showNewPassword ? "text" : "password"}
                       name="newPassword"
                       value={formData.newPassword}
                       onChange={handleInputChange}
                       className="form-input pr-12"
+                      style={{ height: '44px' }}
                       placeholder="Kosongkan jika tidak ingin ganti password"
                     />
-                    <button
-                      type="button"
+                    <div
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray hover:text-primary"
+                      className="absolute right-0 flex items-center justify-center w-12 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                      style={{ top: '0', height: '44px', marginRight: '10px' }}
                     >
-                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
+                      {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </div>
                   </div>
                   <p className="text-xs text-gray mt-1">Minimal 6 karakter jika ingin mengganti password</p>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center space-x-4">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-yellow transition-colors disabled:opacity-50"
+                  className="btn btn-secondary flex items-center space-x-2 disabled:opacity-50"
                 >
-                  <Save size={16} />
-                  <span>Simpan Perubahan</span>
+                  <Save size={18} />
+                  <span className="font-bold">Simpan Perubahan</span>
                 </button>
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="flex items-center gap-2 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="btn btn-secondary flex items-center space-x-2"
                 >
-                  <X size={16} />
-                  <span>Batal</span>
+                  <X size={18} />
+                  <span className="font-bold">Batal</span>
                 </button>
               </div>
             </form>
@@ -432,7 +436,7 @@ const ProfilePage = () => {
         {/* Danger Zone - Only for regular users */}
         {!isAdmin() && (
           <div className="bg-white rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-red-600 mb-4">Hapus Akun</h3>
+            <h3 className="text-lg font-semibold text-red-600" style={{ marginBottom: '5px' }}>Hapus Akun</h3>
             <p className="text-gray mb-4">
               Tindakan ini tidak dapat dibatalkan. Semua data Anda akan dihapus secara permanen.
             </p>
@@ -440,30 +444,31 @@ const ProfilePage = () => {
             {!showDeleteConfirm ? (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                className="btn btn-secondary flex items-center space-x-2"
               >
-                <Trash2 size={16} />
-                <span>Delete Account</span>
+                <Trash2 size={18} />
+                <span className="font-bold">Delete Account</span>
               </button>
             ) : (
               <div className="space-y-4">
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-                  <p className="font-medium">Apakah Anda yakin ingin menghapus akun?</p>
-                  <p className="text-sm mt-1">Tindakan ini tidak dapat dibatalkan dan semua data Anda akan hilang.</p>
+                  <p className="font-medium" style={{ marginBottom: '5px' }}>Apakah Anda yakin ingin menghapus akun?</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center space-x-4">
                   <button
                     onClick={handleDeleteAccount}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                    className="btn btn-secondary flex items-center space-x-2 disabled:opacity-50"
                   >
-                    Ya, Hapus Akun
+                    <Trash2 size={18} />
+                    <span className="font-bold">Ya, Hapus Akun</span>
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                    className="btn btn-secondary flex items-center space-x-2"
                   >
-                    Batal
+                    <X size={18} />
+                    <span className="font-bold">Batal</span>
                   </button>
                 </div>
               </div>

@@ -30,17 +30,13 @@ const ArtifactDetailPage = () => {
 
       if (response && response.data && response.data.artifact) {
         setArtifact(response.data.artifact);
+        
+        // Get bookmark status from server response
+        setIsBookmarked(response.data.artifact.isBookmarked || false);
+        
+        // Get read status from server response
+        setIsRead(response.data.artifact.isRead || false);
       }
-
-      // TODO: Fetch bookmark status from API
-      // For now, use localStorage for demo
-      const bookmarkStatus = localStorage.getItem(`bookmark_${id}`) === 'true';
-      setIsBookmarked(bookmarkStatus);
-
-      // TODO: Fetch read status from API
-      // For now, use localStorage for demo
-      const readStatus = localStorage.getItem(`read_${id}`) === 'true';
-      setIsRead(readStatus);
 
     } catch (err) {
       console.error('Error fetching artifact data:', err);
@@ -55,11 +51,8 @@ const ArtifactDetailPage = () => {
       const newBookmarkStatus = !isBookmarked;
       setIsBookmarked(newBookmarkStatus);
       
-      // Save to localStorage for demo
-      localStorage.setItem(`bookmark_${id}`, newBookmarkStatus.toString());
-      
-      // TODO: Call bookmark API
-      // await artifactAPI.bookmarkArtifact(id, newBookmarkStatus);
+      // Call bookmark API
+      await artifactAPI.bookmarkArtifact(id);
       console.log('Bookmark toggled:', newBookmarkStatus);
     } catch (err) {
       console.error('Error toggling bookmark:', err);
@@ -71,14 +64,12 @@ const ArtifactDetailPage = () => {
     try {
       setIsRead(true);
       
-      // Save to localStorage for demo
-      localStorage.setItem(`read_${id}`, 'true');
-      
-      // TODO: Call read status API
-      // await artifactAPI.markAsRead(id);
+      // Call read status API
+      await artifactAPI.markAsRead(id);
       console.log('Marked as read:', id);
     } catch (err) {
       console.error('Error marking as read:', err);
+      setIsRead(false); // Revert on error
     }
   };
 
@@ -96,47 +87,42 @@ const ArtifactDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary-light pb-16">
-      {/* Page Header */}
-      <div className="bg-white shadow-sm sticky top-12 z-10">
-        <div className="container py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
+      {/* Breadcrumb Navigation */}
+      <div className="border-t border-gray-100" style={{ background: 'linear-gradient(90deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)' }}>
+        <div style={{ padding: '12px 20px' }}>
+          <div className="flex items-center justify-between" style={{ height: '60px' }}>
+            <div style={{ marginLeft: '100px' }} className="flex items-center">
               <button 
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-secondary-light rounded-lg transition-colors mr-3"
+                className="btn btn-secondary flex items-center space-x-2 mr-4"
               >
-                <ArrowLeft size={18} className="text-secondary" />
+                <ArrowLeft size={18} />
               </button>
-              <h1 className="text-lg font-semibold text-secondary">Detail Artefak</h1>
+              <div>
+                <h2 className="text-lg font-semibold text-secondary" style={{ marginBottom: '0px', fontSize: '18px', fontWeight: 'bold' }}>{artifact.title}</h2>
+                <p className="text-gray text-sm" style={{ marginBottom: '0px' }}>Detail lengkap artefak bersejarah</p>
+              </div>
             </div>
             
-            {isAdmin() ? (
-              <button
-                onClick={() => navigate(`/admin/artifacts/${id}/edit`)}
-                className="flex items-center p-2 text-primary hover:text-primary-yellow rounded-lg transition-colors"
-              >
-                <Edit size={18} className="mr-1" />
-                <span className="text-sm">Edit</span>
-              </button>
-            ) : (
-              <button
-                onClick={toggleBookmark}
-                className="p-2 hover:bg-secondary-light rounded-lg transition-colors"
-              >
-                {isBookmarked ? (
-                  <BookmarkCheck size={18} className="text-primary" />
-                ) : (
-                  <Bookmark size={18} className="text-gray" />
-                )}
-              </button>
+            {/* Admin Edit Button */}
+            {isAdmin() && (
+              <div style={{ marginRight: '100px' }}>
+                <button
+                  onClick={() => navigate(`/admin/artifacts/${id}/edit`)}
+                  className="btn btn-secondary flex items-center space-x-2"
+                >
+                  <Edit size={18} />
+                  <span className="font-bold">Edit Artefak</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="container py-6">
-        {/* Artifact Image */}
-        <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6">
+      <div className="py-6" style={{ paddingLeft: '300px', paddingRight: '300px' }}>
+        {/* Artifact Image - Enhanced */}
+        <div className="relative rounded-xl overflow-hidden mb-6" style={{ height: '500px' }}>
           <img 
             src={artifact.imageUrl || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop&crop=center'}
             alt={artifact.title}
@@ -145,134 +131,122 @@ const ArtifactDetailPage = () => {
               e.target.src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop&crop=center';
             }}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
         </div>
 
-        {/* Artifact Title */}
-        <div className="bg-white rounded-xl p-6 mb-6">
-          <h2 className="text-2xl font-bold text-secondary mb-4">{artifact.title}</h2>
-          
-          {/* Audio and Bookmark Controls - Only for regular users */}
-          {!isAdmin() && (
-            <div className="flex items-center gap-3 mb-4">
-              <button
-                onClick={markAsRead}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isRead 
-                    ? 'bg-primary text-white' 
-                    : 'bg-secondary-light text-secondary hover:bg-primary hover:text-white'
-                }`}
-              >
-                {isRead ? <CheckCircle size={16} /> : <Check size={16} />}
-                <span>{isRead ? 'Sudah Dibaca' : 'Tandai Sudah Dibaca'}</span>
-              </button>
-              
-              <button
-                onClick={toggleBookmark}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isBookmarked 
-                    ? 'bg-primary text-white' 
-                    : 'bg-secondary-light text-secondary hover:bg-primary hover:text-white'
-                }`}
-              >
-                {isBookmarked ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
-                <span>{isBookmarked ? 'Tersimpan' : 'Simpan'}</span>
-              </button>
+        {/* Content - Single Column */}
+        <div className="space-y-6">
+          {/* Artifact Title & Description */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-secondary mb-4">Tentang Artefak</h3>
+            
+            {/* Action Buttons - Only for regular users */}
+            {!isAdmin() && (
+              <div className="flex items-center mb-4" style={{ gap: '16px' }}>
+                <button
+                  onClick={markAsRead}
+                  className={`btn ${isRead ? 'btn-primary' : 'btn-secondary'} flex items-center space-x-2`}
+                >
+                  {isRead ? <CheckCircle size={18} /> : <Check size={18} />}
+                  <span className="font-bold">{isRead ? 'Sudah Dibaca' : 'Tandai Sudah Dibaca'}</span>
+                </button>
+                
+                <button
+                  onClick={toggleBookmark}
+                  className={`btn ${isBookmarked ? 'btn-primary' : 'btn-secondary'} flex items-center space-x-2`}
+                >
+                  {isBookmarked ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+                  <span className="font-bold">{isBookmarked ? 'Tersimpan' : 'Simpan'}</span>
+                </button>
+              </div>
+            )}
+
+            <p className="text-gray leading-relaxed" style={{ fontSize: '14px', lineHeight: '1.6' }}>{artifact.description}</p>
+          </div>
+
+          {/* Artifact Details */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-secondary mb-4">Detail Artefak</h3>
+            
+            <div className="grid grid-cols-2 gap-6">
+              {/* Period */}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ height: '50px' }}>
+                  <Calendar size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary mb-1" style={{ marginLeft: '16px' }}>Periode</h4>
+                  <p className="text-gray" style={{ marginLeft: '16px' }}>{artifact.detailPeriod || 'Informasi periode tidak tersedia'}</p>
+                </div>
+              </div>
+
+              {/* Material */}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ height: '50px' }}>
+                  <Layers size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary mb-1" style={{ marginLeft: '16px' }}>Material</h4>
+                  <p className="text-gray" style={{ marginLeft: '16px' }}>{artifact.detailMaterial || 'Informasi material tidak tersedia'}</p>
+                </div>
+              </div>
+
+              {/* Size */}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ height: '50px' }}>
+                  <Ruler size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary mb-1" style={{ marginLeft: '16px' }}>Ukuran</h4>
+                  <p className="text-gray" style={{ marginLeft: '16px' }}>{artifact.detailSize || 'Informasi ukuran tidak tersedia'}</p>
+                </div>
+              </div>
+
+              {/* Style */}
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ height: '50px' }}>
+                  <Palette size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary mb-1" style={{ marginLeft: '16px' }}>Gaya</h4>
+                  <p className="text-gray" style={{ marginLeft: '16px' }}>{artifact.detailStyle || 'Informasi gaya tidak tersedia'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Fun Fact */}
+          {artifact.funfactTitle && artifact.funfactDescription && (
+            <div className="bg-white rounded-xl p-6 shadow-sm" style={{ borderLeft: '4px solid #d4a464' }}>
+              <h3 className="text-lg font-bold mb-3" style={{ color: '#d4a464' }}>Funfact !! {artifact.funfactTitle}</h3>
+              <p className="text-secondary leading-relaxed" style={{ fontSize: '14px', lineHeight: '1.6' }}>{artifact.funfactDescription}</p>
             </div>
           )}
 
-          {/* Description */}
-          <p className="text-gray leading-relaxed">{artifact.description}</p>
+          {/* Location Information */}
+          {artifact.locationUrl && (
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-secondary mb-4">Lokasi Penemuan</h3>
+              <a
+                href={artifact.locationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-primary hover:text-primary-yellow transition-colors font-medium"
+              >
+                <MapPin size={16} className="mr-2" />
+                <span>Lihat Lokasi di Maps</span>
+              </a>
+            </div>
+          )}
+
+          {/* Additional Info */}
+          {artifact.additionalInfo && (
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-secondary mb-4">Informasi Tambahan</h3>
+              <p className="text-gray leading-relaxed" style={{ fontSize: '14px', lineHeight: '1.6' }}>{artifact.additionalInfo}</p>
+            </div>
+          )}
         </div>
-
-        {/* Artifact Details */}
-        <div className="bg-white rounded-xl p-6 mb-6">
-          <h3 className="text-lg font-semibold text-secondary mb-4">Detail Artefak</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Period */}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Calendar size={20} className="text-primary" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-secondary mb-1">Periode</h4>
-                <p className="text-gray">{artifact.detailPeriod || 'Informasi periode tidak tersedia'}</p>
-              </div>
-            </div>
-
-            {/* Material */}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Layers size={20} className="text-primary" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-secondary mb-1">Material</h4>
-                <p className="text-gray">{artifact.detailMaterial || 'Informasi material tidak tersedia'}</p>
-              </div>
-            </div>
-
-            {/* Size */}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Ruler size={20} className="text-primary" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-secondary mb-1">Ukuran</h4>
-                <p className="text-gray">{artifact.detailSize || 'Informasi ukuran tidak tersedia'}</p>
-              </div>
-            </div>
-
-            {/* Style */}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Palette size={20} className="text-primary" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-secondary mb-1">Gaya</h4>
-                <p className="text-gray">{artifact.detailStyle || 'Informasi gaya tidak tersedia'}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Fun Fact */}
-        {artifact.funfactTitle && artifact.funfactDescription && (
-          <div className="bg-gradient-to-r from-primary/10 to-primary-yellow/10 rounded-xl p-6">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-lg">!</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-primary mb-2">{artifact.funfactTitle}</h3>
-                <p className="text-secondary leading-relaxed">{artifact.funfactDescription}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Location Information */}
-        {artifact.locationUrl && (
-          <div className="bg-white rounded-xl p-6 mt-6">
-            <h3 className="text-lg font-semibold text-secondary mb-4">Lokasi Penemuan</h3>
-            <a
-              href={artifact.locationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-primary hover:text-primary-yellow transition-colors"
-            >
-              <MapPin size={16} className="mr-2" />
-              <span>Lihat Lokasi di Maps</span>
-            </a>
-          </div>
-        )}
-
-        {/* Additional Info */}
-        {artifact.additionalInfo && (
-          <div className="bg-white rounded-xl p-6 mt-6">
-            <h3 className="text-lg font-semibold text-secondary mb-4">Informasi Tambahan</h3>
-            <p className="text-gray leading-relaxed">{artifact.additionalInfo}</p>
-          </div>
-        )}
       </div>
     </div>
   );

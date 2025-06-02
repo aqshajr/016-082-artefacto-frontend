@@ -3,7 +3,12 @@ import Cookies from 'js-cookie';
 
 // Konfigurasi base URL dari environment variables
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://artefacto-backend-749281711221.us-central1.run.app/api';
-const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'https://artefacto-749281711221.asia-southeast2.run.app';
+
+// ML API URL - use proxy in development, direct URL in production
+const isDevelopment = import.meta.env.DEV;
+const ML_API_URL = isDevelopment 
+  ? '/api/ml'  // Use Vite proxy in development
+  : (import.meta.env.VITE_ML_API_URL || 'https://artefacto-749281711221.asia-southeast2.run.app');
 
 // Membuat instance axios untuk API backend
 const apiClient = axios.create({
@@ -231,6 +236,12 @@ export const ownedTicketAPI = {
     const response = await apiClient.get(`/owned-tickets/${id}`);
     return response.data;
   },
+
+  // Gunakan tiket (mark as used)
+  useTicket: async (id) => {
+    const response = await apiClient.put(`/owned-tickets/${id}/use`);
+    return response.data;
+  },
 };
 
 // API functions untuk transaksi
@@ -381,22 +392,26 @@ export const mlAPI = {
   // Prediksi artefak dari gambar
   predictArtifact: async (formData) => {
     try {
-      const response = await mlApiClient.post('/predict', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const originalFile = formData.get('image');
+      
+      if (!originalFile) {
+        throw new Error('No file provided');
+      }
+      
+      // Create new FormData with the correct field name for ML API
+      const mlFormData = new FormData();
+      mlFormData.append('file', originalFile);  // ML API expects 'file' field name
+      
+      const response = await mlApiClient.post('/predict', mlFormData, {
         timeout: 60000, // Increase timeout for ML processing
       });
-      return response.data;
+      
+      return response;
     } catch (error) {
-      // Handle CORS and network errors specifically
-      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-        console.error('CORS or network error:', error);
-        throw new Error('CORS_ERROR');
-      }
+      console.error('ML API Error:', error.message);
       throw error;
     }
-  },
+  }
 };
 
 // Export default untuk kemudahan import

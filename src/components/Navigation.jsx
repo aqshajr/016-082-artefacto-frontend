@@ -82,11 +82,12 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center justify-center space-y-0.5 transition-colors ${
+                className={`flex flex-col items-center justify-center space-y-0.5 transition-colors no-underline ${
                   isActive 
                     ? 'text-primary bg-primary/5' 
                     : 'text-gray hover:text-primary'
                 }`}
+                style={{ textDecoration: 'none' }}
               >
                 <Icon size={18} />
                 <span className="text-xs font-medium">{item.label}</span>
