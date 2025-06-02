@@ -13,8 +13,12 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
-      - "-c"
+      - -c
       - |
+        if [ ! -f dist/index.html ]; then
+          echo " Build failed: dist/index.html not found"
+          exit 1
+        fi
         cp app.yaml dist/
         gcloud config set app/cloud_build_timeout 1600
         gcloud app deploy dist/app.yaml --quiet
