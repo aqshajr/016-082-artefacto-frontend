@@ -15,9 +15,9 @@ steps:
     args:
       - "-c"
       - |
-        cp -r dist/* .
+        cp app.yaml dist/
         gcloud config set app/cloud_build_timeout 1600
-        gcloud app deploy --quiet
+        gcloud app deploy dist/app.yaml --quiet
 
 substitutions:
   _API_URL: 'https://artefacto-backend-749281711221.us-central1.run.app/api'
