@@ -14,7 +14,10 @@ steps:
     entrypoint: 'bash'
     args:
       - "-c"
-      - "gcloud config set app/cloud_build_timeout 1600 && gcloud app deploy --quiet"
+      - |
+        cp -r dist/* .
+        gcloud config set app/cloud_build_timeout 1600
+        gcloud app deploy --quiet
 
 substitutions:
   _API_URL: 'https://artefacto-backend-749281711221.us-central1.run.app/api'
@@ -23,3 +26,4 @@ timeout: "1600s"
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
