@@ -7,7 +7,7 @@ steps:
     entrypoint: 'npm'
     args: ['run', 'build']
     env:
-      - 'VITE_API_URL=${_API_URL}'
+      - 'VITE_API_URL=https://artefacto-backend-749281711221.us-central1.run.app/api'
       - 'NODE_ENV=production'
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -20,13 +20,9 @@ steps:
           exit 1
         fi
         gcloud config set app/cloud_build_timeout 1600
-        gcloud app deploy --quiet
-
-substitutions:
-  _API_URL: 'https://artefacto-backend-749281711221.us-central1.run.app/api'
+        gcloud app deploy --quiet --region=us-central
 
 timeout: "1600s"
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
