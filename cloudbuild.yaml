@@ -29,3 +29,5 @@ timeout: "1600s"
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+  serviceAccount: 'projects/g-04-450802/serviceAccounts/artefacto-backend-sa@g-04-450802.iam.gserviceaccount.com'
