@@ -302,7 +302,7 @@ const AdminTransactionsPage = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 font-medium">Pembeli:</span>
                       <div className="font-semibold text-secondary text-right">
-                        {transaction.User ? transaction.User.username : `User ID: ${transaction.userID}`}
+                        {transaction.User ? transaction.User.username : (transaction.userID ? `User ID: ${transaction.userID}` : 'User Terhapus')}
                       </div>
                     </div>
                     
