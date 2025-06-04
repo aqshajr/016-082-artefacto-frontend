@@ -168,6 +168,8 @@ const EditArtifactPage = () => {
       case 'locationUrl':
         if (!value.trim()) {
           errors.locationUrl = 'URL lokasi harus diisi';
+        } else if (value.trim().length > 500) {
+          errors.locationUrl = 'URL lokasi maksimal 500 karakter';
         } else {
           try {
             new URL(value);
