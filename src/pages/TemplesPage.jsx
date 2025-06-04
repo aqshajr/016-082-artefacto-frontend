@@ -27,11 +27,11 @@ const TemplesPage = () => {
       
       console.log('Fetching temples and artifacts...');
       
-      // Fetch temples
+      // Mengambil data candi dari server
       const templesResponse = await templeAPI.getAllTemples();
       console.log('Temples API response:', templesResponse);
       
-      // Fetch artifacts
+      // Mengambil data artefak dari server
       const artifactsResponse = await artifactAPI.getAllArtifacts();
       console.log('Artifacts API response:', artifactsResponse);
       
@@ -48,11 +48,11 @@ const TemplesPage = () => {
         setArtifacts(artifactsData);
       }
       
-      // Calculate progress for each temple using server data
+      // Kalkulasi progress untuk setiap candi menggunakan data server
       const progressData = {};
       templesData.forEach(temple => {
         const templeArtifacts = artifactsData.filter(artifact => artifact.templeID === temple.templeID);
-        // Use server-provided isRead field instead of localStorage
+        // Gunakan isRead dari data server bukan localStorage
         const readArtifacts = templeArtifacts.filter(artifact => artifact.isRead === true);
         const progress = templeArtifacts.length > 0 ? (readArtifacts.length / templeArtifacts.length) * 100 : 0;
         

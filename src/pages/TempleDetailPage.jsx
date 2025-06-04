@@ -26,25 +26,25 @@ const TempleDetailPage = () => {
       setIsLoading(true);
       setError('');
 
-      // Fetch temple details
+      // Mengambil detail candi dari server
       const templeResponse = await templeAPI.getTempleById(id);
 
       if (templeResponse && templeResponse.data && templeResponse.data.temple) {
         setTemple(templeResponse.data.temple);
         
-        // Fetch artifacts separately using artifactAPI with templeId filter
+        // Mengambil artefak secara terpisah menggunakan artifactAPI dengan filter templeId
         try {
           const artifactsResponse = await artifactAPI.getAllArtifacts();
           
           if (artifactsResponse && artifactsResponse.data && artifactsResponse.data.artifacts) {
-            // Filter artifacts for this temple
+            // Filter artefak untuk candi ini
             const templeArtifacts = artifactsResponse.data.artifacts.filter(
               artifact => artifact.templeID === parseInt(id)
             );
             console.log(`Found ${templeArtifacts.length} artifacts for temple ${id}`);
             setArtifacts(templeArtifacts);
             
-            // Extract read and bookmark status from server response
+            // Mengambil status baca dan bookmark dari respons server
             const readIds = templeArtifacts
               .filter(artifact => artifact.isRead)
               .map(artifact => artifact.artifactID);
@@ -81,11 +81,11 @@ const TempleDetailPage = () => {
       newReadArtifacts.add(artifactId);
       setReadArtifacts(newReadArtifacts);
       
-      // Call mark as read API
+      // Panggil API tandai sebagai dibaca
       await artifactAPI.markAsRead(artifactId);
     } catch (err) {
       console.error('Error marking as read:', err);
-      // Revert on error
+      // Kembalikan jika ada kesalahan
       const revertedReadArtifacts = new Set(readArtifacts);
       revertedReadArtifacts.delete(artifactId);
       setReadArtifacts(revertedReadArtifacts);
@@ -102,11 +102,11 @@ const TempleDetailPage = () => {
       }
       setBookmarkedArtifacts(newBookmarkedArtifacts);
       
-      // Call bookmark API
+      // Panggil API bookmark
       await artifactAPI.bookmarkArtifact(artifactId);
     } catch (err) {
       console.error('Error toggling bookmark:', err);
-      // Revert on error
+      // Kembalikan jika ada kesalahan
       setBookmarkedArtifacts(bookmarkedArtifacts);
     }
   };
@@ -240,7 +240,7 @@ const TempleDetailPage = () => {
                           borderRadius: '24px'
                         }}
                         onClick={(e) => {
-                          // Only navigate if not clicking on bookmark buttons
+                          // Hanya navigasi jika tidak mengklik pada tombol bookmark
                           if (!e.target.closest('button')) {
                             handleArtifactClick(artifact);
                           }

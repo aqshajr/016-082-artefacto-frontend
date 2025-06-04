@@ -40,7 +40,7 @@ export const clearAuth = () => {
   console.log('✅ Authentication data cleared');
 };
 
-// Add to window for easy debugging in console
+// Tambahkan ke window untuk debugging mudah di console
 if (typeof window !== 'undefined') {
   window.debugAuth = debugAuth;
   window.clearAuth = clearAuth;

@@ -1,13 +1,13 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// Konfigurasi base URL dari environment variables
+// Konfigurasi URL dasar dari variabel lingkungan
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://artefacto-backend-749281711221.us-central1.run.app/api';
 
-// ML API URL - use proxy in development, direct URL in production
+// URL API ML - gunakan proxy dalam pengembangan, URL langsung dalam produksi
 const isDevelopment = import.meta.env.DEV;
 const ML_API_URL = isDevelopment 
-  ? '/api/ml'  // Use Vite proxy in development
+  ? '/api/ml'  // Gunakan proxy Vite dalam pengembangan
   : (import.meta.env.VITE_ML_API_URL || 'https://artefacto-749281711221.asia-southeast2.run.app');
 
 // Membuat instance axios untuk API backend
@@ -18,16 +18,16 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  withCredentials: false, // Disable credentials for CORS
+  withCredentials: false, // Nonaktifkan kredensial untuk CORS
 });
 
-// Membuat instance axios untuk ML API
+// Membuat instance axios untuk API ML
 const mlApiClient = axios.create({
   baseURL: ML_API_URL,
   timeout: 30000,
 });
 
-// Interceptor untuk menambahkan token ke setiap request
+// Interceptor untuk menambahkan token ke setiap permintaan
 apiClient.interceptors.request.use(
   (config) => {
     const token = Cookies.get('authToken');
@@ -41,25 +41,25 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor untuk menangani response dan error
+// Interceptor untuk menangani respons dan kesalahan
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    // Jika ada response dari server
+    // Jika ada respons dari server
     if (error.response) {
       if (error.response.status === 401) {
-        // Token expired atau tidak valid, hapus token dan redirect ke login
+        // Token kedaluwarsa atau tidak valid, hapus token dan arahkan ke login
         Cookies.remove('authToken');
         Cookies.remove('userRole');
         window.location.href = '/login';
       }
     } else if (error.request) {
-      // Request dibuat tapi tidak ada response (server tidak tersedia)
+      // Permintaan dibuat tapi tidak ada respons (server tidak tersedia)
       console.log('Server tidak tersedia:', error.request);
     } else {
-      // Error lain dalam setup request
+      // Kesalahan lain dalam pengaturan permintaan
       console.log('Error:', error.message);
     }
     return Promise.reject(error);
@@ -67,9 +67,9 @@ apiClient.interceptors.response.use(
 );
 
 
-// Utility functions untuk authentication
+// Fungsi utilitas untuk autentikasi
 export const authAPI = {
-  // Login user
+  // Masuk pengguna
   login: async (email, password) => {
     console.log('API Login request:', { email, password });
     
@@ -88,22 +88,22 @@ export const authAPI = {
     
     // Simpan token dan role ke cookies jika login berhasil
     if (response.data.data && response.data.data.token) {
-      // New structure: response.data.data.token
+      // Struktur baru: response.data.data.token
       Cookies.set('authToken', response.data.data.token, { expires: 7 });
       if (response.data.data.user && response.data.data.user.role !== undefined) {
         let role = response.data.data.user.role;
-        // Convert boolean role to integer string (true = "1", false = "0")
+        // Ubah boolean role menjadi string integer (true = "1", false = "0")
         if (typeof role === 'boolean') {
           role = role ? 1 : 0;
         }
         Cookies.set('userRole', role.toString(), { expires: 7 });
       }
     } else if (response.data.token) {
-      // Old structure: response.data.token
+      // Struktur lama: response.data.token
       Cookies.set('authToken', response.data.token, { expires: 7 });
       if (response.data.user && response.data.user.role !== undefined) {
         let role = response.data.user.role;
-        // Convert boolean role to integer string (true = "1", false = "0")
+        // Ubah peran boolean menjadi string integer (true = "1", false = "0")
         if (typeof role === 'boolean') {
           role = role ? 1 : 0;
         }
@@ -114,13 +114,13 @@ export const authAPI = {
     return response.data;
   },
 
-  // Register user baru
+  // Daftar pengguna baru
   register: async (username, email, password, passwordConfirmation) => {
     const requestData = {
       username,
       email,
       password,
-      passwordConfirmation: passwordConfirmation, // Server expects camelCase
+      passwordConfirmation: passwordConfirmation, // Server mengharapkan camelCase
     };
     
     console.log('API Register request:', requestData);
@@ -136,61 +136,61 @@ export const authAPI = {
     console.log('Response status:', response.status);
     console.log('Response data:', response.data);
     
-    // Simpan token dan role ke cookies jika register berhasil
+    // Simpan token dan peran ke cookies jika pendaftaran berhasil
     if (response.data.data && response.data.data.token) {
       Cookies.set('authToken', response.data.data.token, { expires: 7 });
-      // Role akan disimpan di AuthContext karena mungkin tidak ada di response
+      // Peran akan disimpan di AuthContext karena mungkin tidak ada di respons
     }
     
     return response.data;
   },
 
-  // Update profile user
+  // Perbarui profil pengguna
   updateProfile: async (formData) => {
     const response = await apiClient.put('/auth/profile', formData, {
       headers: {
-        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        // Hapus Content-Type secara eksplisit agar browser mengatur multipart/form-data dengan boundary
         'Content-Type': undefined,
       },
     });
     return response.data;
   },
 
-  // Delete account user
+  // Hapus akun pengguna
   deleteAccount: async () => {
     const response = await apiClient.delete('/auth/profile');
     
-    // Hapus token dan role dari cookies setelah delete account
+    // Hapus token dan peran dari cookies setelah hapus akun
     Cookies.remove('authToken');
     Cookies.remove('userRole');
     
     return response.data;
   },
 
-  // Logout user
+  // Keluar pengguna
   logout: () => {
     Cookies.remove('authToken');
     Cookies.remove('userRole');
     window.location.href = '/login';
   },
 
-  // Cek apakah user sudah login
+  // Periksa apakah pengguna sudah login
   isAuthenticated: () => {
     return !!Cookies.get('authToken');
   },
 
-  // Dapatkan role user
+  // Dapatkan role pengguna
   getUserRole: () => {
     return Cookies.get('userRole') || '0';
   },
 
-  // Cek apakah user adalah admin
+  // Periksa apakah pengguna adalah admin
   isAdmin: () => {
     return Cookies.get('userRole') === '1';
   },
 };
 
-// API functions untuk tiket
+// Fungsi API untuk tiket
 export const ticketAPI = {
   // Dapatkan semua tiket
   getAllTickets: async () => {
@@ -223,9 +223,9 @@ export const ticketAPI = {
   },
 };
 
-// API functions untuk tiket yang dimiliki user
+// Fungsi API untuk tiket yang dimiliki pengguna
 export const ownedTicketAPI = {
-  // Dapatkan semua tiket yang dimiliki user
+  // Dapatkan semua tiket yang dimiliki pengguna
   getOwnedTickets: async () => {
     const response = await apiClient.get('/owned-tickets');
     return response.data;
@@ -244,7 +244,7 @@ export const ownedTicketAPI = {
   },
 };
 
-// API functions untuk transaksi
+// Fungsi API untuk transaksi
 export const transactionAPI = {
   // Dapatkan semua transaksi
   getAllTransactions: async () => {
@@ -252,7 +252,7 @@ export const transactionAPI = {
     return response.data;
   },
 
-  // Dapatkan semua transaksi untuk admin (semua user)
+  // Dapatkan semua transaksi untuk admin (semua pengguna)
   getAllTransactionsAdmin: async () => {
     const response = await apiClient.get('/transactions/admin/all');
     return response.data;
@@ -271,7 +271,7 @@ export const transactionAPI = {
   },
 };
 
-// API functions untuk candi/temple
+// Fungsi API untuk candi
 export const templeAPI = {
   // Dapatkan semua candi
   getAllTemples: async () => {
@@ -287,13 +287,13 @@ export const templeAPI = {
 
   // Buat candi baru (Admin only)
   createTemple: async (formData) => {
-    console.log('=== API createTemple Debug ===');
-    console.log('FormData received in API:', formData);
-    console.log('FormData constructor:', formData.constructor.name);
+    console.log('=== Debug API createTemple ===');
+    console.log('FormData diterima di API:', formData);
+    console.log('Konstruktor FormData:', formData.constructor.name);
     
-    // Log FormData contents
+    // Catat isi FormData
     if (formData instanceof FormData) {
-      console.log('FormData entries:');
+      console.log('Entri FormData:');
       for (let [key, value] of formData.entries()) {
         if (value instanceof File) {
           console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
@@ -303,14 +303,14 @@ export const templeAPI = {
       }
     }
     
-    console.log('Making POST request to /temples...');
+    console.log('Membuat permintaan POST ke /temples...');
     const response = await apiClient.post('/temples', formData, {
       headers: {
-        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        // Hapus Content-Type secara eksplisit agar browser mengatur multipart/form-data dengan boundary
         'Content-Type': undefined,
       },
     });
-    console.log('=== End API createTemple Debug ===');
+    console.log('=== Akhir Debug API createTemple ===');
     return response.data;
   },
 
@@ -318,21 +318,21 @@ export const templeAPI = {
   updateTemple: async (id, formData) => {
     const response = await apiClient.put(`/temples/${id}`, formData, {
       headers: {
-        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        // Hapus Content-Type secara eksplisit agar browser mengatur multipart/form-data dengan boundary
         'Content-Type': undefined,
       },
     });
     return response.data;
   },
 
-  // Hapus candi (Admin only)
+  // Hapus candi (Khusus Admin)
   deleteTemple: async (id) => {
     const response = await apiClient.delete(`/temples/${id}`);
     return response.data;
   },
 };
 
-// API functions untuk artefak
+// Fungsi API untuk artefak
 export const artifactAPI = {
   // Dapatkan semua artefak
   getAllArtifacts: async () => {
@@ -350,7 +350,7 @@ export const artifactAPI = {
   createArtifact: async (formData) => {
     const response = await apiClient.post('/artifacts', formData, {
       headers: {
-        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        // Hapus Content-Type secara eksplisit agar browser mengatur multipart/form-data dengan boundary
         'Content-Type': undefined,
       },
     });
@@ -361,7 +361,7 @@ export const artifactAPI = {
   updateArtifact: async (id, formData) => {
     const response = await apiClient.put(`/artifacts/${id}`, formData, {
       headers: {
-        // Explicitly remove Content-Type to let browser set multipart/form-data with boundary
+        // Hapus Content-Type secara eksplisit agar browser mengatur multipart/form-data dengan boundary
         'Content-Type': undefined,
       },
     });
@@ -380,14 +380,14 @@ export const artifactAPI = {
     return response.data;
   },
 
-  // Mark artefak sebagai sudah dibaca
+  // Tandai artefak sebagai sudah dibaca
   markAsRead: async (id) => {
     const response = await apiClient.post(`/artifacts/${id}/read`);
     return response.data;
   },
 };
 
-// API functions untuk Machine Learning (prediksi artefak)
+// Fungsi API untuk Machine Learning (prediksi artefak)
 export const mlAPI = {
   // Prediksi artefak dari gambar
   predictArtifact: async (formData) => {
@@ -395,26 +395,26 @@ export const mlAPI = {
       const originalFile = formData.get('image');
       
       if (!originalFile) {
-        throw new Error('No file provided');
+        throw new Error('Tidak ada file yang disediakan');
       }
       
-      // Create new FormData with the correct field name for ML API
+      // Buat FormData baru dengan nama field yang benar untuk API ML
       const mlFormData = new FormData();
-      mlFormData.append('file', originalFile);  // ML API expects 'file' field name
+      mlFormData.append('file', originalFile);  // API ML mengharapkan nama field 'file'
       
       const response = await mlApiClient.post('/predict', mlFormData, {
-        timeout: 60000, // Increase timeout for ML processing
+        timeout: 60000, // Tingkatkan timeout untuk pemrosesan ML
       });
       
       return response;
     } catch (error) {
-      console.error('ML API Error:', error.message);
+      console.error('Kesalahan API ML:', error.message);
       throw error;
     }
   }
 };
 
-// Export default untuk kemudahan import
+// Ekspor default untuk kemudahan impor
 export default {
   auth: authAPI,
   tickets: ticketAPI,

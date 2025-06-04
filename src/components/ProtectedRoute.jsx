@@ -7,17 +7,17 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const location = useLocation();
 
-  // Tampilkan loading saat masih mengecek authentication
+  // Tampilkan loading saat masih memeriksa autentikasi
   if (isLoading) {
     return <LoadingSpinner text="Memuat..." />;
   }
 
-  // Redirect ke login dengan menyimpan halaman yang ingin diakses
+  // Arahkan ke login dengan menyimpan halaman yang ingin diakses
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Redirect ke home jika butuh admin tapi user bukan admin
+  // Arahkan ke home jika butuh admin tapi pengguna bukan admin
   if (requireAdmin && !isAdmin()) {
     return <Navigate to="/" replace />;
   }

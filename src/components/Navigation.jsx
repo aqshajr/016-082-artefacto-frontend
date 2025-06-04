@@ -8,7 +8,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin, logout } = useAuth();
 
-  // Jangan tampilkan navigation di halaman auth dan admin
+  // Jangan tampilkan navigasi di halaman auth dan admin
   const hideNavigation = [
     '/login', 
     '/register', 

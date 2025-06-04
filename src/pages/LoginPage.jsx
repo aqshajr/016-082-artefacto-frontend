@@ -20,12 +20,12 @@ const LoginPage = () => {
   // Redirect ke halaman yang dituju setelah login, atau ke home
   const from = location.state?.from?.pathname || '/';
 
-  // Restore error from sessionStorage if page was refreshed
+  // Pulihkan kesalahan dari sessionStorage jika halaman disegarkan
   useEffect(() => {
     const savedError = sessionStorage.getItem('loginError');
     if (savedError) {
       setError(savedError);
-      sessionStorage.removeItem('loginError'); // Clear after showing
+      sessionStorage.removeItem('loginError'); // Hapus setelah ditampilkan
     }
   }, []);
 
@@ -43,7 +43,7 @@ const LoginPage = () => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Prevent any default form behavior
+    // Cegah perilaku form default
     if (e.target) {
       e.target.preventDefault?.();
     }
@@ -54,26 +54,26 @@ const LoginPage = () => {
     try {
       const result = await login(formData.email, formData.password);
       
-      // Prevent any navigation if login failed
+      // Cegah navigasi apa pun jika login gagal
       if (!result || !result.success) {
         const errorMessage = result?.error || 'Login gagal. Periksa email dan password Anda.';
         
-        // Also store in sessionStorage for persistence
+        // Simpan juga di sessionStorage
         sessionStorage.setItem('loginError', errorMessage);
         
         setError(errorMessage);
         setIsLoading(false);
-        return false; // Prevent any further processing
+        return false; // Cegah pemrosesan lebih lanjut
       }
       
       if (result.success) {
-        // Check if user is admin from user data in localStorage after login
+        // Periksa apakah pengguna adalah admin dari data pengguna di localStorage setelah login
         const savedUser = localStorage.getItem('userData');
         if (savedUser) {
           try {
             const userData = JSON.parse(savedUser);
             
-            // Check if admin (role 1 or true)
+            // Periksa apakah admin (role 1 atau true)
             if (userData.role === 1 || userData.role === true) {
               navigate('/admin/temples');
               return;
@@ -83,14 +83,14 @@ const LoginPage = () => {
           }
         }
         
-        // Default redirect for regular users
+        // Pengalihan default untuk pengguna biasa
         navigate(from);
       }
     } catch (err) {
       console.error('LoginPage: Login error:', err);
       const errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
       
-      // Also store in sessionStorage for persistence
+      // Simpan juga di sessionStorage untuk persistensi
       sessionStorage.setItem('loginError', errorMessage);
       
       setError(errorMessage);
@@ -98,7 +98,7 @@ const LoginPage = () => {
       setIsLoading(false);
     }
     
-    return false; // Prevent form submission
+    return false; // Cegah pengiriman form
   };
 
   if (isLoading) {
