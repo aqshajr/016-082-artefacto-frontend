@@ -129,8 +129,8 @@ const CreateArtifactPage = () => {
           errors.funfactDescription = 'Deskripsi fun fact harus diisi';
         } else if (value.trim().length < 10) {
           errors.funfactDescription = 'Deskripsi fun fact minimal 10 karakter';
-        } else if (value.trim().length > 500) {
-          errors.funfactDescription = 'Deskripsi fun fact maksimal 500 karakter';
+        } else if (value.trim().length > 1000) {
+          errors.funfactDescription = 'Deskripsi fun fact maksimal 1000 karakter';
         }
         break;
         
@@ -642,9 +642,9 @@ const CreateArtifactPage = () => {
                         required
                       />
                       <div className="flex justify-between items-center mt-1">
-                        <p className="text-gray-500 text-xs">Minimal 10 karakter, maksimal 500 karakter</p>
-                        <span className={`text-xs ${formData.funfactDescription.length > 450 ? 'text-red-500' : 'text-gray-400'}`}>
-                          {formData.funfactDescription.length}/500
+                        <p className="text-gray-500 text-xs">Minimal 10 karakter, maksimal 1000 karakter</p>
+                        <span className={`text-xs ${formData.funfactDescription.length > 900 ? 'text-red-500' : 'text-gray-400'}`}>
+                          {formData.funfactDescription.length}/1000
                         </span>
                       </div>
                     </div>
